@@ -21,9 +21,26 @@ textarea {
   height: 50px;
 }
 
-#messages p {
+#messages {
+  margin-top: 1px;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
   background: #e9ecef;
-  padding: 10px;
+  padding: 1px 12px; /* Verringerter Innenabstand für eine kompaktere Darstellung */
   border-radius: 5px;
-  margin: 5px 0;
+  margin-bottom: 10px;
+}
+
+.message .text {
+  word-break: break-word;
+}
+
+.message .timestamp {
+  align-self: flex-end;
+  color: gray;
+  margin-top: 1px;
+  margin-bottom: 1px;
 }
