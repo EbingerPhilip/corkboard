@@ -34,6 +34,16 @@ function broadcastMessage(message) {
   });
 }
 
+app.get('/User', function (req, res) {
+//client sends username and password, server checks for a corresponding User and either sends it or error back.
+
+
+
+})
+
+
+
+
 server.listen(3000, () => {
   console.log("Server running at http://localhost:3000/");
 });
