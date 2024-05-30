@@ -2,6 +2,8 @@ const express = require("express");
 const path = require("path");
 const http = require("http");
 const WebSocket = require("ws");
+const bodyParser = require('body-parser');
+
 const User = require('./models/users');
 
 const app = express();
@@ -9,6 +11,8 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 app.use(express.static(path.join(__dirname, "client")));
+
+app.use(bodyParser.json());
 
 let messages = [];
 
@@ -35,10 +39,25 @@ function broadcastMessage(message) {
   });
 }
 
-app.get('/User', function (req, res) {
+app.get('/User', async function (req, res) {
 //client sends username and password, server checks for a corresponding User and either sends it or error back.
+try {
+  const {username, password} = req.body;
+  const user = await User.findByUsername(username)
 
+  const valid = user.checkpassword(password);
+
+  if (valid){
+    res.status(200).json({ user, message: "Login Successful" });
+  }else{
+    res.status(400).message("Login failed")
+  }
+
+}catch (err){
+  console.log(err)
+}
 })
+
 
 app.post('/newUser', async function (req, res) {
   try {
