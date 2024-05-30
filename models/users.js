@@ -1,6 +1,7 @@
 const db = require('../config/db')
 
 class User {
+
     constructor(name, password,) {
 
         this.username = name;
@@ -42,6 +43,9 @@ class User {
 
     getUsername() {
         return this.username
+    }
+    getChats(){
+        return this.Chats
     }
 
     checkpassword(login) {

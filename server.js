@@ -39,26 +39,26 @@ function broadcastMessage(message) {
   });
 }
 
-app.get('/User', async function (req, res) {
+
 //client sends username and password, server checks for a corresponding User and either sends it or error back.
+app.get('/User', async function (req, res) {
 try {
   const {username, password} = req.body;
   const user = await User.findByUsername(username)
 
   const valid = user.checkpassword(password);
+  const chats =  user.getChats();
 
   if (valid){
-    res.status(200).json({ user, message: "Login Successful" });
+    res.status(200).json({ chats, message: "Login Successful" });
   }else{
     res.status(400).message("Login failed")
   }
-
-}catch (err){
-  console.log(err)
-}
+}catch (err){ console.log(err)}
 })
 
 
+//adds a new User to our Database
 app.post('/newUser', async function (req, res) {
   try {
     const {username, password} = req.body;
@@ -77,6 +77,9 @@ app.post('/newUser', async function (req, res) {
   }
 })
 
+
+//
+app.post('/addChat')
 
 
 
