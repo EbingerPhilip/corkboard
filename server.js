@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const http = require("http");
 const WebSocket = require("ws");
+const User = require('./models/users');
 
 const app = express();
 const server = http.createServer(app);
@@ -37,8 +38,24 @@ function broadcastMessage(message) {
 app.get('/User', function (req, res) {
 //client sends username and password, server checks for a corresponding User and either sends it or error back.
 
+})
 
+app.post('/newUser', async function (req, res) {
+  try {
+    const {username, password} = req.body;
 
+    if (!username || !password) {
+      return res.status(400).send('Username and password are required');
+    }
+
+    const user = new User(username, password);
+    await user.saveUser();
+    res.status(201).send('User created successfully')
+
+  } catch (error) {
+    console.error('Error creating user:', error);
+    res.status(500).send('Internal Server Error')
+  }
 })
 
 
