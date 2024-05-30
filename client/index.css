@@ -1,15 +1,67 @@
-body {
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body, html {
+  height: 100%;
   font-family: Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+.sidebar {
+  width: 20%;
+  height: 100%;
+  background-color: beige;
+  overflow-y: auto;
+  position: fixed;
+  padding: 10px;
+}
+
+.profile-section {
+  display: flex;
+  text-align: left;
+  padding: 20px;
+  border-bottom: 1px solid #ccc;
+}
+
+.profile-pic {
+  width: 90px;  /* Einstellbare Größe */
+  height: 90px;
+  border-radius: 50%;  /* Kreisförmiges Bild */
+  margin-bottom: 10px;
+}
+
+.username {
+  font-size: 30px;
+  color: #333;
+  white-space: nowrap;
+  margin-left: 10%;
+  margin-top: 10%;
+}
+
+.chat-list li {
+  padding: 10px;
+  list-style: none;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.chat-list li:hover {
+  background-color: lightcoral;
 }
 
 header {
+  margin-left: 20%;
   background-color: #f8f9fa;
   padding: 20px;
   text-align: center;
 }
 
 main {
-  margin: 20px;
+  margin-left: 20%;
+  padding: 20px;
 }
 
 form {
@@ -23,9 +75,11 @@ textarea {
 
 #messages {
   margin-top: 1px;
+  overflow-y: auto;
 }
 
 .message {
+  color: lightcoral;
   display: flex;
   flex-direction: column;
   background: #e9ecef;
