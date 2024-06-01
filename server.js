@@ -98,6 +98,22 @@ try {
 });
 
 
+app.delete('/removeChat', async function (req, res){
+  try {
+    const {ChatID} = req.body;
+
+
+
+
+
+  }catch (err){
+    console.error('Error deleting Chat:', err);
+    res.status(500).send('Internal Server Error')
+  }
+});
+
+
+
 
 
 
