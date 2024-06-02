@@ -5,6 +5,8 @@ const WebSocket = require("ws");
 const bodyParser = require('body-parser');
 
 const User = require('./models/users');
+const Chat = require('./models/chats');
+
 
 const app = express();
 const server = http.createServer(app);
@@ -45,18 +47,16 @@ app.get('/User', async function (req, res) {
 try {
   const {username, password} = req.body;
   const user = await User.findByUsername(username)
-
   const valid = user.checkpassword(password);
-  const chats =  user.getChats();
+
 
   if (valid){
-    res.status(200).json({ chats, message: "Login Successful" });
+    res.status(200).json({ user, message: "Login Successful" });
   }else{
     res.status(400).message("Login failed")
   }
 }catch (err){ console.log(err)}
 })
-
 
 //adds a new User to our Database
 app.post('/newUser', async function (req, res) {
@@ -75,11 +75,43 @@ app.post('/newUser', async function (req, res) {
     console.error('Error creating user:', error);
     res.status(500).send('Internal Server Error')
   }
-})
+});
+
+//creates new Chat object
+app.post('/addChat', async function (req, res){
+try {
+  const {User1, User2} = req.body;
+
+  if (!User1 || !User2) {
+    return res.status(400).send('missing User');
+  }
+
+  const chat = new Chat(User1,User2);
+  const chatID = await chat.saveChat();
+  res.status(201).json({chatID, message: "Chat created successfully"})
+
+}catch (err){
+  console.error('Error creating Chat:', error);
+  res.status(500).send('Internal Server Error')
+}
+});
+
+//remove Chat from Databanks
+app.delete('/removeChat', async function (req, res){
+  try {
+    const {ChatID} = req.body;
+    const chat = await Chat.getChatfromID(ChatID);
 
 
-//
-app.post('/addChat')
+
+  }catch (err){
+    console.error('Error deleting Chat:', err);
+    res.status(500).send('Internal Server Error')
+  }
+});
+
+
+
 
 
 
