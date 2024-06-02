@@ -58,7 +58,6 @@ try {
 }catch (err){ console.log(err)}
 })
 
-
 //adds a new User to our Database
 app.post('/newUser', async function (req, res) {
   try {
@@ -78,7 +77,7 @@ app.post('/newUser', async function (req, res) {
   }
 });
 
-
+//creates new Chat object
 app.post('/addChat', async function (req, res){
 try {
   const {User1, User2} = req.body;
@@ -97,12 +96,11 @@ try {
 }
 });
 
-
+//remove Chat from Databanks
 app.delete('/removeChat', async function (req, res){
   try {
     const {ChatID} = req.body;
-
-
+    const chat = await Chat.getChatfromID(ChatID);
 
 
 

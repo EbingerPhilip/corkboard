@@ -1,4 +1,4 @@
-const db = require('../config/user_db')
+const db = require('../config/db')
 const User = require('./users')
 
 class Chat {
@@ -6,7 +6,7 @@ class Chat {
     constructor(User1, User2) {
         this.User1 = User1;
         this.User2 = User2;
-        this.Messages = [];
+        this.Messages = "";
     }
 
     async saveChat() {
@@ -64,12 +64,29 @@ class Chat {
     }
 
     static async getChatfromID(chatID){
+        let sql = `SELECT * FROM chats WHERE id = '${chatID}'`;
+        const [chatrow, _] = await db.execute(sql);
+        if (chatrow.length > 0) {
+            const chatData = chatrow[0];
+
+            const chat = new Chat(chatData.User1, chatData.User2);
+            chat.id = chatData.id;
+            chat.Messages = chatData.Messages;
+            console.log(chat)
+
+            return chat
+        } else {
+            return null; // User not found
+        }
+    }
+
+    async deleteChat(){
+
 
 
 
 
     }
-
 }
 
 module.exports = Chat;
