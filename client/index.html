@@ -2,37 +2,60 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Corkboard</title>
-  <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
   <script type="module" src="index.js"></script>
 </head>
 <body>
-<div class="sidebar">
-  <div class="profile-section">
-    <img src="images/img_1.png" alt="Profilbild" class="profile-pic">
-    <div class="username">Username</div>
-  </div>
-  <ul class="chat-list">
-    <li>Chat 1</li>
-    <li>Chat 2</li>
-    <li>Chat 3</li>
-    <li>Chat 4</li>
-  </ul>
-</div>
-<div class="main-content">
-  <header>
-    <h1>Corkboard-Chat-Test</h1>
-  </header>
-  <main>
-    <form id="message-form">
-      <div>
-        <label for="input">Input:</label>
-        <textarea rows="5" id="input"></textarea>
+<div class="columns" style="height: 100vh;"> <!-- Setzt die Höhe der gesamten Ansicht -->
+  <div class="column is-3"> <!-- Sidebar -->
+    <aside class="menu is-flex is-flex-direction-column" style= "height:100%;">
+      <div class="profile-section" style="text-align: center; padding: 10px; display: flex; align-items: center;">
+        <figure class="image is-128x128 mt-5" style="margin-right: 20px;"> <!-- Fügt rechts einen Abstand hinzu -->
+          <img class="is-rounded" src="images/img.png" alt="Profilbild">
+        </figure>
+        <p class="username is-size-3 has-text-info" style="margin-bottom: 10px;">Username</p>
       </div>
-      <button type="submit">Send</button>
-    </form>
-    <div id="messages"></div>
-  </main>
+      <p class="menu-label is-size-4 ml-5">
+        Chats
+      </p>
+      <ul class="menu-list">
+        <li><a class="my-1.5 py-4" href="#">Chat 1</a></li>
+        <li><a class="my-1.5 py-4" href="#">Chat 2</a></li>
+        <li><a class="my-1.5 py-4" href="#">Chat 3</a></li>
+        <li><a class="my-1.5 py-4" href="#">Chat 4</a></li>
+      </ul>
+      <div class="mt-auto">
+        <div class="field has-addons">
+          <div class="control is-expanded">
+      <input class="input is-rounded" type="text" placeholder="Search User" />
+      </div>
+      <div class="control">
+        <button class="button is-link is-rounded">Search</button>
+      </div>
+      </div>
+      </div>
+    </aside>
+  </div>
+  <div class="column is-9"> <!-- Hauptinhalt -->
+    <div class="section is-flex is-flex-direction-column" style="height: 100%;">
+      <div class="container">
+        <header>
+          <h1 class="title">Chat 1</h1>
+        </header>
+        <div id="messages"></div>
+      </div>
+      <div class="field has-addons" style="margin-top: auto;"> <!-- Footer Bereich am unteren Rand -->
+        <div class="control is-expanded">
+          <input class="input is-rounded" type="text" placeholder="Message" />
+        </div>
+        <div class="control">
+          <button class="button is-link is-rounded">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 </body>
 </html>
