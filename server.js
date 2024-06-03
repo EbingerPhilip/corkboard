@@ -6,6 +6,8 @@ const bodyParser = require('body-parser');
 
 const User = require('./models/users');
 const Chat = require('./models/chats');
+const Message = require('./models/message');
+
 
 
 const app = express();
@@ -111,6 +113,25 @@ app.delete('/removeChat', async function (req, res){
 });
 
 
+app.post('/Message', async function (req, res){
+  try {
+    const {ChatID, UserID, Username, TextMessage} = req.body;
+    const message = new Message(UserID, Username, TextMessage)
+    const tablename = `Chat${ChatID}`
+
+    const valid = Message.saveMessage(tablename, message)
+
+    if (valid){
+      res.status(201).send("Message received")
+    }else{
+      res.status(500).send('Error in Saving Message')
+    }
+
+  }catch (err){
+    console.error('Error saving Message:', err);
+    res.status(500).send('Internal Server Error')
+  }
+})
 
 
 

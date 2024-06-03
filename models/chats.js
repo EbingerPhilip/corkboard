@@ -48,10 +48,7 @@ class Chat {
         const createTableSQL = `
         CREATE TABLE ${tableName} (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            sender_id INT NOT NULL,
-            sender_name VarChar(100) NOT NULL,
-            message TEXT NOT NULL,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            Data JSON NOT NULL
         )`;
         try {
             await db.execute(createTableSQL);
