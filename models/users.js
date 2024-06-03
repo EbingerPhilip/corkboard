@@ -44,6 +44,7 @@ class User {
         }
     }
 
+
     // Database functions start here
 
     static async findByUsername(username) {
@@ -80,7 +81,27 @@ class User {
 
         sql = `UPDATE users SET Chats = '${JSON.stringify(chatsArray)}' WHERE id = ${UserID}`;
         await db.execute(sql);
-        console.log(this.findByUsername(UserID))
+    }
+
+    static async removeChat(chatID, UserID){
+        let sql = `SELECT * FROM users WHERE id = '${UserID}'`;
+        const [user, _] = await db.execute(sql);
+        if (user.length === 0){
+            console.log("Chat: " + chatID + " has not been initalized correctly")
+        }
+
+        const userData = user[0];
+        let chatsArray = JSON.parse(userData.Chats);
+        const index = chatsArray.indexOf(chatID);
+        if (index !== -1){
+            chatsArray.splice(index, 1)
+        }else {
+            console.log(`ID ${id} not found in Chats.`);
+        }
+
+        sql = `UPDATE users SET Chats = '${JSON.stringify(chatsArray)}' WHERE id = ${UserID}`;
+        await db.execute(sql);
+        console.log(this.findByUsername(UserID));
     }
 }
 

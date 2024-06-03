@@ -91,19 +91,19 @@ try {
   res.status(201).json({chatID, message: "Chat created successfully"})
 
 }catch (err){
-  console.error('Error creating Chat:', error);
+  console.error('Error creating Chat:', err);
   res.status(500).send('Internal Server Error')
 }
 });
 
-//remove Chat from Databanks
+//remove Chat from the Databank
 app.delete('/removeChat', async function (req, res){
   try {
     const {ChatID} = req.body;
     const chat = await Chat.getChatfromID(ChatID);
 
-
-
+    await chat.deleteChat()
+    res.status(201).send("Chat deleted")
   }catch (err){
     console.error('Error deleting Chat:', err);
     res.status(500).send('Internal Server Error')

@@ -58,8 +58,6 @@ class Chat {
             console.log(`Table '${tableName}' created successfully`);
         } catch (error) {
             console.error(`Error creating table '${tableName}':`, error);
-        } finally {
-            await db.end();
         }
     }
 
@@ -81,11 +79,25 @@ class Chat {
     }
 
     async deleteChat(){
+        if (db._closed) {
+            throw new Error('Connection pool is closed.');
+        }
 
+       const sql = `Drop Table if exists \`${this.Messages}\``;
+       try{
+           await User.removeChat(this.id, this.User1);
+           await User.removeChat(this.id, this.User2);
 
+           const connection = await db.getConnection();
+           await connection.execute(sql);
+           connection.release();
 
-
-
+          console.log(`Table ${this.Messages} deleted successfully`)
+           return true
+       }catch (err){
+           console.log(`Error deleting table '${this.Messages}':`, error)
+           return false
+       }
     }
 }
 
