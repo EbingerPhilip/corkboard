@@ -14,32 +14,42 @@ const wss = new WebSocket.Server({ server });
 
 app.use(express.static(path.join(__dirname, "client")));
 
-app.use(bodyParser.json());
-
-let messages = [];
-
+let clients = {};
 wss.on("connection", (ws) => {
-
-  ws.send(JSON.stringify({ type: "init", messages }));
-
-
   ws.on("message", (message) => {
     const parsedMessage = JSON.parse(message);
-    if (parsedMessage.text) {
-      messages.push(parsedMessage);
-      broadcastMessage(parsedMessage);
+
+    if (parsedMessage.type === "init" && parsedMessage.userId) {
+      clients[parsedMessage.userId] = ws;
+      ws.userId = parsedMessage.userId;
+      ws.send(JSON.stringify({ type: "init", messages: [] }));
+    }
+
+    if (parsedMessage.type === "direct" && parsedMessage.toUserId && parsedMessage.text) {
+      const targetWs = clients[parsedMessage.toUserId];
+      if (targetWs && targetWs.readyState === WebSocket.OPEN) {
+        targetWs.send(JSON.stringify({
+          type: "direct",
+          fromUserId: ws.userId,
+          text: parsedMessage.text,
+          timestamp: parsedMessage.timestamp
+        }));
+      }
+      ws.send(JSON.stringify({
+        type: "direct",
+        fromUserId: ws.userId,
+        text: parsedMessage.text,
+        timestamp: parsedMessage.timestamp
+      }));
+    }
+  });
+
+  ws.on("close", () => {
+    if (ws.userId) {
+      delete clients[ws.userId];
     }
   });
 });
-
-function broadcastMessage(message) {
-  const data = JSON.stringify({ type: "update", message });
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(data);
-    }
-  });
-}
 
 
 //client sends username and password, server checks for a corresponding User and either sends it or error back.
