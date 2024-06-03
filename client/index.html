@@ -17,24 +17,32 @@
         </figure>
         <p class="username is-size-3 has-text-info" style="margin-bottom: 10px;">Username</p>
       </div>
+      <!-- Wird dann automatisch durch login vergeben -->
+      <div class="field">
+        <label class="label" for="user-id">User ID:</label>
+        <div class="control">
+          <input class="input" type="text" id="user-id" />
+        </div>
+      </div>
+
       <p class="menu-label is-size-4 ml-5">
         Chats
       </p>
       <ul class="menu-list">
-        <li><a class="my-1.5 py-4" href="#">Chat 1</a></li>
-        <li><a class="my-1.5 py-4" href="#">Chat 2</a></li>
-        <li><a class="my-1.5 py-4" href="#">Chat 3</a></li>
-        <li><a class="my-1.5 py-4" href="#">Chat 4</a></li>
+        <li><a class="my-1.5 py-4" href="#" data-user-id="1">Chat 1</a></li>
+        <li><a class="my-1.5 py-4" href="#" data-user-id="2">Chat 2</a></li>
+        <li><a class="my-1.5 py-4" href="#" data-user-id="3">Chat 3</a></li>
+        <li><a class="my-1.5 py-4" href="#" data-user-id="4">Chat 4</a></li>
       </ul>
       <div class="mt-auto">
         <div class="field has-addons">
           <div class="control is-expanded">
-      <input class="input is-rounded" type="text" placeholder="Search User" />
-      </div>
-      <div class="control">
-        <button class="button is-link is-rounded">Search</button>
-      </div>
-      </div>
+            <input class="input is-rounded" type="text" placeholder="Search User" />
+          </div>
+          <div class="control">
+            <button class="button is-link is-rounded">Search</button>
+          </div>
+        </div>
       </div>
     </aside>
   </div>
@@ -42,21 +50,19 @@
     <div class="section is-flex is-flex-direction-column" style="height: 100%;">
       <div class="container">
         <header>
-          <h1 class="title">Chat 1</h1>
+          <h1 class="title" id="chat-title">Chat 1</h1>
         </header>
         <div id="messages"></div>
       </div>
-      <div class="field has-addons" style="margin-top: auto;"> <!-- Footer Bereich am unteren Rand -->
+      <form id="message-form" class="field has-addons" style="margin-top: auto;">
         <div class="control is-expanded">
-          <input class="input is-rounded" type="text" placeholder="Message" />
+          <input id="input" class="input is-rounded" type="text" placeholder="Message" />
         </div>
         <div class="control">
-          <button class="button is-link is-rounded">Send</button>
+          <button type="submit" class="button is-link is-rounded">Send</button>
         </div>
-      </div>
+      </form>
     </div>
   </div>
 </div>
 </body>
-</html>
-

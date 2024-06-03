@@ -2,30 +2,65 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("message-form");
   const input = document.getElementById("input");
   const messageContainer = document.getElementById("messages");
+  const userIdInput = document.getElementById("user-id");
+  const chatTitle = document.getElementById("chat-title");
 
-  // Create WebSocket connection
-  const ws = new WebSocket(`ws://${window.location.host}`);
+  let ws;
+  let targetUserId = null;
 
-  ws.addEventListener("message", (event) => {
-    const data = JSON.parse(event.data);
-    if (data.type === "init") {
-      // Initial messages
-      displayMessages(data.messages);
-    } else if (data.type === "update") {
-      // New message
-      displayMessages([data.message], true);
+  function connectWebSocket(userId) {
+    if (ws && ws.readyState !== WebSocket.CLOSED && ws.readyState !== WebSocket.CLOSING) {
+      ws.close();
+    }
+    ws = new WebSocket(`ws://${window.location.host}`);
+    ws.addEventListener("open", () => {
+      console.log("WebSocket connection opened");
+      ws.send(JSON.stringify({ type: "init", userId }));
+    });
+
+    ws.addEventListener("message", (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "init") {
+        // Initial messages are ignored for now
+      } else if (data.type === "direct") {
+        // Only display messages from the current chat
+        if (data.fromUserId === targetUserId || data.toUserId === targetUserId) {
+          displayMessages([{ text: `${data.fromUserId}: ${data.text}`, timestamp: data.timestamp }], true);
+        }
+      }
+    });
+
+    ws.addEventListener("error", (error) => {
+      console.error("WebSocket error:", error);
+    });
+
+    ws.addEventListener("close", () => {
+      console.log("WebSocket connection closed");
+    });
+  }
+
+  userIdInput.addEventListener("change", () => {
+    const userId = userIdInput.value.trim();
+    if (userId) {
+      connectWebSocket(userId);
     }
   });
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    const now = new Date();
-
+    const userId = userIdInput.value.trim();
     const messageText = input.value.trim();
-    if (messageText) {
-      const message = { text: messageText, timestamp: now.getTime() };
+
+    if (messageText && userId && targetUserId && ws && ws.readyState === WebSocket.OPEN) {
+      const message = {
+        type: "direct",
+        toUserId: targetUserId,
+        text: messageText,
+        timestamp: Date.now()
+      };
       ws.send(JSON.stringify(message));
       input.value = "";
+      displayMessages([{ text: `You: ${messageText}`, timestamp: Date.now() }], true);
     }
   });
 
@@ -33,29 +68,31 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!append) {
       messageContainer.innerHTML = "";
     }
-
     messages.forEach((msg) => {
       const messageWrapper = document.createElement("div");
       messageWrapper.classList.add("message");
 
       const messageText = document.createElement("p");
       messageText.classList.add("text");
-      messageText.textContent = msg.text;
+      messageText.textContent = msg.text.startsWith("You: ") ? `${userIdInput.value}: ${msg.text.substring(5)}` : msg.text;
 
-      const messageTimestamp = document.createElement("p");
-      messageTimestamp.classList.add("timestamp");
-      messageTimestamp.textContent = formatTimestamp(msg.timestamp);
-
-      messageWrapper.appendChild(messageText);
-      messageWrapper.appendChild(messageTimestamp);
-
-      messageContainer.appendChild(messageWrapper);
+      messageWrapper.append(messageText);
+      messageContainer.append(messageWrapper);
     });
   }
 
-  function formatTimestamp(timestamp) {
-    const date = new Date(timestamp);
-    const options = { hour: '2-digit', minute: '2-digit' };
-    return date.toLocaleTimeString([], options);
+  document.querySelectorAll(".menu-list a").forEach(chatLink => {
+    chatLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      chatTitle.textContent = event.target.textContent;
+      targetUserId = event.target.getAttribute("data-user-id");
+      loadChatMessages(targetUserId);
+    });
+  });
+
+  function loadChatMessages(userId) {
+    messageContainer.innerHTML = "";
+    // For now, this function does nothing.
+    // You could fetch messages from the server here if needed.
   }
 });
