@@ -96,6 +96,31 @@ class Chat {
            return false
        }
     }
+
+    static async getMessages(TableName){
+        try {
+            let sql = `SELECT * FROM ${TableName}`
+            const [chatString, _] = await db.execute(sql);
+            const chat = [];
+            if (chatString.length > 0) {
+                for (let i = 0; i < chatString.length; i++){
+                    const row = chatString[i]
+                    const message = row.Data;
+                    console.log(message)
+
+                    chat.push(message)
+                }
+                return chat
+            }else{
+                return null
+            }
+
+        }catch (err){
+            console.log(err.message)
+        }
+    }
 }
+
+
 
 module.exports = Chat;

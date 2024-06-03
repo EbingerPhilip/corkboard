@@ -124,7 +124,7 @@ app.delete('/removeChat', async function (req, res){
   }
 });
 
-
+//save a Message
 app.post('/Message', async function (req, res){
   try {
     const {ChatID, UserID, Username, TextMessage} = req.body;
@@ -143,8 +143,24 @@ app.post('/Message', async function (req, res){
     console.error('Error saving Message:', err);
     res.status(500).send('Internal Server Error')
   }
-})
+});
 
+//return a Chat
+app.get('/Chat', async function (req, res){
+  try {
+    const {ChatID} = req.body;
+    const tablename = `Chat${ChatID}`
+    const chatHistory = await Chat.getMessages(tablename);
+
+    if (chatHistory){
+      res.status(201).json({chatHistory,message : "Message received"});
+    }else{
+      res.status(500).send('Error in retrieving Messages');
+    }
+  }catch (err){
+    res.status(500).send('Internal Server Error')
+  }
+});
 
 
 

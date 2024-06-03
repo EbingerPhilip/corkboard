@@ -11,7 +11,6 @@ class Message{
         this.timestamp = new Date();
     }
 
-
     static async saveMessage(tableName, Message){
 
         let sql = `INSERT INTO ${tableName} (Data) VALUES (?)`;
