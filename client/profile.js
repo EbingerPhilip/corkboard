@@ -6,6 +6,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const emailElement = document.getElementById('profile-email');
     const nameElement = document.getElementById('profile-name');
     const phoneElement = document.getElementById('profile-phone');
+    const profilePicture = document.getElementById('profile-picture');
+    const fileInput = document.getElementById('file-input');
+    const uploadButton = document.getElementById('upload-button');
+    const backButton = document.getElementById('back-button');
 
 
     document.getElementById('profile-username').textContent = username;
@@ -41,6 +45,25 @@ document.addEventListener("DOMContentLoaded", () => {
         phoneElement.textContent = updatedPhone;
     });
 
+    uploadButton.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                profilePicture.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    backButton.addEventListener('click', () => {
+        window.location.href = '/index.html';
+    });
+
     function toggleEdit(isEditing) {
         if (isEditing) {
             emailElement.innerHTML = `<input id="input-email" class="input" type="email" value="${emailElement.textContent}">`;
@@ -57,3 +80,4 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 });
+
