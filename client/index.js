@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const messageContainer = document.getElementById("messages");
   const userIdInput = document.getElementById("user-id");
   const chatTitle = document.getElementById("chat-title");
+  const usernameLink = document.getElementById("username-link");
+
 
   let ws;
   let targetUserId = null;
@@ -43,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const userId = userIdInput.value.trim();
     if (userId) {
       connectWebSocket(userId);
+      usernameLink.href = `profile.html?userId=${userId}&username=Username`;
     }
   });
 

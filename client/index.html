@@ -8,16 +8,15 @@
   <script type="module" src="index.js"></script>
 </head>
 <body>
-<div class="columns" style="height: 100vh;"> <!-- Setzt die Höhe der gesamten Ansicht -->
-  <div class="column is-3"> <!-- Sidebar -->
+<div class="columns" style="height: 100vh;">
+  <div class="column is-3">
     <aside class="menu is-flex is-flex-direction-column" style= "height:100%;">
       <div class="profile-section" style="text-align: center; padding: 10px; display: flex; align-items: center;">
-        <figure class="image is-128x128 mt-5" style="margin-right: 20px;"> <!-- Fügt rechts einen Abstand hinzu -->
+        <figure class="image is-128x128 mt-5" style="margin-right: 20px;">
           <img class="is-rounded" src="images/img.png" alt="Profilbild">
         </figure>
-        <p class="username is-size-3 has-text-info" style="margin-bottom: 10px;">Username</p>
+        <a href="/profile.html" id="username-link" class="username is-size-3 has-text-info" style="margin-bottom: 10px;">Username</a>
       </div>
-      <!-- Wird dann automatisch durch login vergeben -->
       <div class="field">
         <label class="label" for="user-id">User ID:</label>
         <div class="control">
@@ -46,7 +45,7 @@
       </div>
     </aside>
   </div>
-  <div class="column is-9"> <!-- Hauptinhalt -->
+  <div class="column is-9">
     <div class="section is-flex is-flex-direction-column" style="height: 100%;">
       <div class="container">
         <header>
@@ -66,3 +65,4 @@
   </div>
 </div>
 </body>
+</html>
