@@ -73,8 +73,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     messages.forEach((msg) => {
       const messageWrapper = document.createElement("div");
-      messageWrapper.classList.add("message");
-
+      messageWrapper.classList.add("message-bubble", "box");
+      if (msg.fromUserId === userIdInput.value) {
+        messageWrapper.classicList.add("you");
+      }
       const messageText = document.createElement("p");
       messageText.classList.add("text");
       messageText.textContent = msg.text.startsWith("You: ") ? `${userIdInput.value}: ${msg.text.substring(5)}` : msg.text;
