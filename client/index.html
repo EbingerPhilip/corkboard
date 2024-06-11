@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Corkboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
-  <script type="module" src="index.js"></script>
+  <script defer src="index.js"></script>
   <style>
     .column.is-3 {
       border-right: 2px solid #dbdbdb;
@@ -17,31 +17,31 @@
       flex-grow: 1;
       overflow-y: auto;
       display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
+      flex-direction: column-reverse;
       padding: 10px;
     }
+
     .message-bubble {
-      background-color: lightseagreen;
+      background-color: cadetblue;
       border-radius: 10px;
       padding: 10px;
       margin: 5px 0;
       max-width: 60%;
       color: black;
     }
+
     .message-bubble.you {
       background-color: cadetblue;
       align-self: flex-end;
       color: black;
-      align-items: flex-end;
-      text-align: right;
     }
+
   </style>
 </head>
 <body>
 <div class="columns" style="height: 100vh;">
   <div class="column is-3">
-    <aside class="menu is-flex is-flex-direction-column" style= "height:100%;">
+    <aside class="menu is-flex is-flex-direction-column" style="height: 100%;">
       <div class="profile-section" style="text-align: center; padding: 10px; display: flex; align-items: center;">
         <figure class="image is-128x128 mt-5" style="margin-right: 20px;">
           <img class="is-rounded" src="images/img.png" alt="Profilbild">
@@ -84,17 +84,21 @@
         </header>
         <div id="messages"></div>
       </div>
-      <form id="message-form" class="field has-addons" style="margin-top: auto;">
+      <form id="message-form" class="field has-addons" style="margin-top: auto; position: relative;">
         <div class="control is-expanded">
-          <input id="input" class="input is-rounded" type="text" placeholder="Message" />
+          <input id="input" class="input is-rounded" type="text" placeholder="Message" list="emoji-list" />
+          <datalist id="emoji-list"></datalist>
         </div>
         <div class="control">
           <button type="submit" class="button is-link is-rounded">Send</button>
+        </div>
+        <div class="control">
+          <button id="emoji-button" type="button" class="button is-rounded">😊</button>
         </div>
       </form>
     </div>
   </div>
 </div>
+<script src="index.js"></script>
 </body>
-
 </html>

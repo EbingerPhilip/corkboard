@@ -1,14 +1,35 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const form = document.getElementById("message-form");
   const input = document.getElementById("input");
   const messageContainer = document.getElementById("messages");
   const userIdInput = document.getElementById("user-id");
   const chatTitle = document.getElementById("chat-title");
-  const usernameLink = document.getElementById("username-link");
+  const emojiButton = document.getElementById('emoji-button');
+  const emojiList = document.getElementById('emoji-list');
+
+
+  emojiButton.textContent = '😊';
+  emojiButton.classList.add('button', 'is-rounded', 'is-small');
+  form.appendChild(emojiButton);
 
 
   let ws;
   let targetUserId = null;
+  let emojis = [];
+
+
+  async function loadEmojis() {
+    try {
+      const response = await fetch(`/emoji?q=slightly smiling face`);
+      emojis = await response.json();
+      displayEmojis();
+    } catch (error) {
+      console.error('Error fetching emojis:', error);
+    }
+  }
+
+  await loadEmojis();
+
 
   function connectWebSocket(userId) {
     if (ws && ws.readyState !== WebSocket.CLOSED && ws.readyState !== WebSocket.CLOSING) {
@@ -17,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ws = new WebSocket(`ws://${window.location.host}`);
     ws.addEventListener("open", () => {
       console.log("WebSocket connection opened");
-      ws.send(JSON.stringify({ type: "init", userId }));
+      ws.send(JSON.stringify({type: "init", userId}));
     });
 
     ws.addEventListener("message", (event) => {
@@ -27,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (data.type === "direct") {
         // Only display messages from the current chat
         if (data.fromUserId === targetUserId || data.toUserId === targetUserId) {
-          displayMessages([{ text: `${data.fromUserId}: ${data.text}`, timestamp: data.timestamp }], true);
+          displayMessages([{text: `${data.fromUserId}: ${data.text}`, timestamp: data.timestamp}], true);
         }
       }
     });
@@ -63,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       ws.send(JSON.stringify(message));
       input.value = "";
-      displayMessages([{ text: `You: ${messageText}`, timestamp: Date.now() }], true);
+      displayMessages([{text: `You: ${messageText}`, timestamp: Date.now()}], true);
     }
   });
 
@@ -100,4 +121,21 @@ document.addEventListener("DOMContentLoaded", () => {
     // For now, this function does nothing.
     // You could fetch messages from the server here if needed.
   }
+
+  emojiButton.addEventListener('click', (event) => {
+    event.preventDefault();
+    if (emojis.length > 0) {
+      emojiList.innerHTML = ''; // Clear previous emojis
+      emojis.forEach(emoji => {
+        const option = document.createElement('option');
+        option.value = emoji.character;
+        emojiList.appendChild(option);
+      });
+      input.focus(); // Focus on the input to show the datalist
+    }
+  });
+
+
 });
+
+

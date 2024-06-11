@@ -1,3 +1,4 @@
+const axios = require('axios');
 const express = require("express");
 const path = require("path");
 const http = require("http");
@@ -17,6 +18,8 @@ const wss = new WebSocket.Server({ server });
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "client")));
+
+const API_KEY = 'u3O0f9JEeVZmSd61OPE6jQ==RH3eJvBNB0kYkB9n';
 
 let clients = {};
 wss.on("connection", (ws) => {
@@ -159,6 +162,21 @@ app.get('/Chat', async function (req, res){
     }
   }catch (err){
     res.status(500).send('Internal Server Error')
+  }
+});
+
+app.get('/emoji', async (req, res) => {
+  try {
+    const queries = ['face', 'hand', 'animal', 'food', 'activity', 'symbol', 'heart']; // Categories to fetch emojis
+    const promises = queries.map(query => axios.get(`https://api.api-ninjas.com/v1/emoji?name=${query}`, {
+      headers: { 'X-Api-Key': API_KEY }
+    }));
+    const results = await Promise.all(promises);
+    const emojis = results.flatMap(result => result.data);
+    res.json(emojis);
+  } catch (error) {
+    console.error('Error fetching emoji:', error);
+    res.status(500).send('Error fetching emoji');
   }
 });
 
