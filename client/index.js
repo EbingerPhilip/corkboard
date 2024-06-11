@@ -75,14 +75,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const messageWrapper = document.createElement("div");
       messageWrapper.classList.add("message-bubble", "box");
       if (msg.fromUserId === userIdInput.value) {
-        messageWrapper.classicList.add("you");
+        messageWrapper.classList.add("you");
       }
       const messageText = document.createElement("p");
       messageText.classList.add("text");
       messageText.textContent = msg.text.startsWith("You: ") ? `${userIdInput.value}: ${msg.text.substring(5)}` : msg.text;
 
       messageWrapper.append(messageText);
-      messageContainer.append(messageWrapper);
+      messageContainer.prepend(messageWrapper);
     });
   }
 
