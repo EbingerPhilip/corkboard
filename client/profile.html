@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
+    <style>
+        .top-right {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .button.is-x {
+            border: none;
+            background: transparent;
+            font-size: 2rem;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body>
+<section class="section">
+    <div class="container">
+        <div class="box" style="position: relative;">
+            <button id="back-button" class="button is-x top-right" aria-label="Close">&times;</button>
+            <div class="columns is-vcentered is-multiline">
+                <div class="column is-12 has-text-centered">
+                    <figure class="image is-256x256 is-inline-block">
+                        <img id="profile-picture" class="is-rounded" src="images/img.png" alt="Profile Picture">
+                    </figure>
+                    <input type="file" id="file-input" class="file-input" accept="image/*" style="display: none;">
+                    <button id="upload-button" class="button is-primary is-inline-block ml-5">Change Picture</button>
+                    <button id="edit-button" class="button is-primary is-inline-block ml-5">Edit Profile</button>
+                    <button id="save-button" class="button is-primary is-inline-block ml-5" style="display: none;">Save Changes</button>
+                </div>
+                <div class="column is-12">
+                    <h1 class="title has-text-centered is-size-3" id="profile-username">Username</h1>
+                </div>
+                <div class="column is-12">
+                    <div class="content is-large">
+                        <p><strong>Email:</strong> <span id="profile-email" class="is-size-4">example@example.com</span></p>
+                        <p><strong>Name:</strong> <span id="profile-name" class="is-size-4">John Doe</span></p>
+                        <p><strong>Phone:</strong> <span id="profile-phone" class="is-size-4">123-456-7890</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script src="profile.js"></script>
+</body>
+</html>

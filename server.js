@@ -1,3 +1,4 @@
+const axios = require('axios'); //JS Library; verwendet Promises
 const express = require("express");
 const path = require("path");
 const http = require("http");
@@ -17,6 +18,8 @@ const wss = new WebSocket.Server({ server });
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "client")));
+
+const API_KEY = 'u3O0f9JEeVZmSd61OPE6jQ==RH3eJvBNB0kYkB9n';
 
 let clients = {};
 wss.on("connection", (ws) => {
@@ -166,6 +169,36 @@ app.get('/Chat', async function (req, res){
     }
   }catch (err){
     res.status(500).send('Internal Server Error')
+  }
+});
+
+app.get('/emoji', async (req, res) => {
+  try {
+    // Liste der Kategorien von Emojis
+    const categories = ['face', 'hand', 'animal', 'food', 'activity', 'symbol', 'heart'];
+
+    //Funktion um die Emojis für eine bestimmte Kategorie zu holen
+    //Nimmt eine Kategorie und macht eine GET Anfrage an Emoji-API
+    const fetchEmojis = async (category) => {
+      const response = await axios.get(`https://api.api-ninjas.com/v1/emoji?name=${category}`, {
+        headers: { 'X-Api-Key': API_KEY }
+      });
+      return response.data;
+    };
+
+    // Erstellt Array von Promises, indem für jede Kategorie 'fetchEmojis' aufgerufen wird
+    //Wartet bis alle Promises abgeschlossen sind und gibt Ergebnisse als Array zurück
+    const emojiResults = await Promise.all(categories.map(fetchEmojis));
+
+    // Flacht das Array von Arrays in ein einzelnes Array ab
+    const allEmojis = emojiResults.flat();
+
+    // Sendet gesammelte Emojis als JSON Response zurück
+    res.json(allEmojis);
+
+  } catch (error) {
+    console.error('Error fetching emojis:', error);
+    res.status(500).send('Error fetching emojis');
   }
 });
 
