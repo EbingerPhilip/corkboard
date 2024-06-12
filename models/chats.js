@@ -108,7 +108,7 @@ class Chat {
                     const message = row.Data;
                     console.log(message)
 
-                    chat.push(message)
+                    chat.push(JSON.parse(message))
                 }
                 return chat
             }else{

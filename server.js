@@ -55,7 +55,7 @@ wss.on("connection", (ws) => {
   });
 });
 
-
+//login
 //client sends username and password, server checks for a corresponding User and either sends it or error back.
 app.get('/User', async function (req, res) {
 try {
@@ -73,6 +73,7 @@ try {
 })
 
 //adds a new User to our Database
+//takes username and password
 app.post('/newUser', async function (req, res) {
   try {
     const {username, password} = req.body;
@@ -92,6 +93,7 @@ app.post('/newUser', async function (req, res) {
 });
 
 //creates new Chat object
+//takes two Userid returns a Chat id
 app.post('/addChat', async function (req, res){
 try {
   const {User1, User2} = req.body;
@@ -111,6 +113,7 @@ try {
 });
 
 //remove Chat from the Databank
+//takes a Chat id sends message
 app.delete('/removeChat', async function (req, res){
   try {
     const {ChatID} = req.body;
@@ -125,6 +128,8 @@ app.delete('/removeChat', async function (req, res){
 });
 
 //save a Message
+//takes a Chat id, User id, Username and Text String
+//Username is needed to avoid needlessly searching for a name in db
 app.post('/Message', async function (req, res){
   try {
     const {ChatID, UserID, Username, TextMessage} = req.body;
@@ -146,11 +151,13 @@ app.post('/Message', async function (req, res){
 });
 
 //return a Chat
+//takes a Chat id, returns a List of Message objects
 app.get('/Chat', async function (req, res){
   try {
     const {ChatID} = req.body;
     const tablename = `Chat${ChatID}`
     const chatHistory = await Chat.getMessages(tablename);
+
 
     if (chatHistory){
       res.status(201).json({chatHistory,message : "Message received"});
