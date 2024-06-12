@@ -20,15 +20,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function loadEmojis() {
     try {
-      const response = await fetch(`/emoji?q=slightly smiling face`);
-      emojis = await response.json();
-      displayEmojis();
+      //sendet HTTP Req und gibt Promise zurück; welches auf Antwort wartet + Req an Endpunkt /emoji gesendet
+      //'await' wartet das Promis der Fetch Funktion aufgelöst wird; Code haltet an bis Anfrage abgeschlossen
+      const response = await fetch(`/emoji`);
+      emojis = await response.json();                           //Wartet das PRomise aufgelöst wird und JSON Objekt zurück gibt
+      displayEmojis();                                          //Zeigt dann Emojis an
     } catch (error) {
       console.error('Error fetching emojis:', error);
     }
   }
 
-  await loadEmojis();
+  await loadEmojis();       //asynchrone Funktion loadEmojis aufgerufen und wartet, dass die Funktion abgeschlossen wird, bevor der Code weiter ausgeführt wird
 
 
   function connectWebSocket(userId) {
@@ -123,18 +125,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   emojiButton.addEventListener('click', (event) => {
-    event.preventDefault();
+    //prüft ob Emoji im Array vorhanden
     if (emojis.length > 0) {
-      emojiList.innerHTML = ''; // Clear previous emojis
+      //zeigt nur aktuelle Emojis an (fall doppelter Klick auf Button)
+      emojiList.innerHTML = '';
+      //durchlaufen Array; fügen für jedes Emoji ein option-Element in die Emoji-Liste (datalist) ein
+      //ermöglicht aus aktualisierten Liste auszuwählen
       emojis.forEach(emoji => {
-        const option = document.createElement('option');
-        option.value = emoji.character;
-        emojiList.appendChild(option);
+        emojiList.insertAdjacentHTML('beforeend', `<option value="${emoji.character}"></option>`);
       });
-      input.focus(); // Focus on the input to show the datalist
+      //Nach dem Aktualisieren der Liste wird der Fokus auf das Eingabefeld gesetzt
+      input.focus();
     }
   });
-
 
 });
 
