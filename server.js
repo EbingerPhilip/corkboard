@@ -95,6 +95,26 @@ app.post('/newUser', async function (req, res) {
   }
 });
 
+app.put('/addInfo', async function (req, res) {
+  try {
+    const { email, name, phone } = req.body;
+
+    const user = await User.findByUsername(username); // Assuming email is unique and used as identifier
+    if (user) {
+      user.email = email;
+      user.name = name;
+      user.phone = phone;
+      await user.saveUserinfo();
+      res.status(201).send('Userinfo saved successfully');
+    } else {
+      res.status(400).send('User not found');
+    }
+  } catch (error) {
+    console.error('Error saving user info:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 //creates new Chat object
 //takes two Userid returns a Chat id
 app.post('/addChat', async function (req, res){

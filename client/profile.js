@@ -32,18 +32,11 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleEdit(true);
     });
 
-    saveButton.addEventListener('click', () => {
+    saveButton.addEventListener('click', async () => {
+        await saveUserinfo();
         toggleEdit(false);
-
-
-        const updatedEmail = document.getElementById('input-email').value;
-        const updatedName = document.getElementById('input-name').value;
-        const updatedPhone = document.getElementById('input-phone').value;
-
-        emailElement.textContent = updatedEmail;
-        nameElement.textContent = updatedName;
-        phoneElement.textContent = updatedPhone;
     });
+
 
     uploadButton.addEventListener('click', () => {
         fileInput.click();
@@ -77,6 +70,34 @@ document.addEventListener("DOMContentLoaded", () => {
             phoneElement.textContent = document.getElementById('input-phone').value;
             editButton.style.display = 'inline-block';
             saveButton.style.display = 'none';
+        }
+    }
+
+    async function saveUserinfo() {
+        const updatedEmail = document.getElementById('input-email').value;
+        const updatedName = document.getElementById('input-name').value;
+        const updatedPhone = document.getElementById('input-phone').value;
+
+        try {
+            const response = await fetch('/addInfo', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: updatedEmail,
+                    name: updatedName,
+                    phone: updatedPhone
+                })
+            });
+
+            if (response.ok) {
+                console.log('Userinfo saved successfully');
+            } else {
+                console.error('Failed to save userinfo');
+            }
+        } catch (error) {
+            console.error('Error saving userinfo:', error);
         }
     }
 });

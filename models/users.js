@@ -2,19 +2,26 @@ const db = require('../config/db')
 
 class User {
 
-    constructor(name, password,) {
+    constructor(username, password, email, phone, name) {
         this.username = name;
         this.password = password;
         this.Chats = [];
+        this.email = email;
+        this.phone = phone;
+        this.name = name;
+
     }
+
 
     getUsername() {
         return this.username
     }
-    getChats(){
+
+    getChats() {
         return this.Chats
     }
-    getid(){
+
+    getid() {
         return this.id;
     }
 
@@ -44,6 +51,18 @@ class User {
         }
     }
 
+    async saveUserinfo() {
+        const sql = `
+            UPDATE users SET 
+            email = ?,
+            name = ?,
+            phone = ?
+            WHERE username = ?
+        `;
+        await db.execute(sql, [this.email, this.name, this.phone, this.username]);
+    }
+
+
 
     // Database functions start here
 
@@ -55,7 +74,7 @@ class User {
 
             const user = new User(userData.username, userData.password);
             user.id = userData.id;
-            user.Chats =  JSON.parse(userData.Chats);
+            user.Chats = JSON.parse(userData.Chats);
 
             return user
         } else {
@@ -71,7 +90,7 @@ class User {
 
         let sql = `SELECT * FROM users WHERE id = '${UserID}'`;
         const [user, _] = await db.execute(sql);
-        if (user.length === 0){
+        if (user.length === 0) {
             console.log("Chat: " + chatID + " has not been initalized correctly")
         }
 
@@ -83,19 +102,19 @@ class User {
         await db.execute(sql);
     }
 
-    static async removeChat(chatID, UserID){
+    static async removeChat(chatID, UserID) {
         let sql = `SELECT * FROM users WHERE id = '${UserID}'`;
         const [user, _] = await db.execute(sql);
-        if (user.length === 0){
+        if (user.length === 0) {
             console.log("Chat: " + chatID + " has not been initalized correctly")
         }
 
         const userData = user[0];
         let chatsArray = JSON.parse(userData.Chats);
         const index = chatsArray.indexOf(chatID);
-        if (index !== -1){
+        if (index !== -1) {
             chatsArray.splice(index, 1)
-        }else {
+        } else {
             console.log(`ID ${id} not found in Chats.`);
         }
 
