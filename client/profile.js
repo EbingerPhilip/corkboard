@@ -64,27 +64,35 @@ document.addEventListener("DOMContentLoaded", () => {
             phoneElement.innerHTML = `<input id="input-phone" class="input" type="tel" value="${phoneElement.textContent}">`;
             editButton.style.display = 'none';
             saveButton.style.display = 'inline-block';
+            console.log('edit');
         } else {
             emailElement.textContent = document.getElementById('input-email').value;
             nameElement.textContent = document.getElementById('input-name').value;
             phoneElement.textContent = document.getElementById('input-phone').value;
             editButton.style.display = 'inline-block';
             saveButton.style.display = 'none';
+            console.log('no edit');
         }
     }
 
+//sendet updateUserInfo zum Server
     async function saveUserinfo() {
+        //bekommen upgedatede infos
         const updatedEmail = document.getElementById('input-email').value;
         const updatedName = document.getElementById('input-name').value;
         const updatedPhone = document.getElementById('input-phone').value;
 
+        const username = document.getElementById('profile-username').textContent;
+
         try {
-            const response = await fetch('/addInfo', {
+            //sends PUT req to updateInfo
+            const response = await fetch('/updateInfo', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    username: username,
                     email: updatedEmail,
                     name: updatedName,
                     phone: updatedPhone
