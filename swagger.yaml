@@ -1,0 +1,217 @@
+openapi: 3.0.3
+info:
+  title: Corkboard
+  description: API für die Verwaltung von Chats und Nachrichten
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Development Server
+tags:
+  - name: user
+    description: Operationen rund um Benutzer
+  - name: chat
+    description: Operationen rund um Chats
+  - name: message
+    description: Operationen rund um Nachrichten
+  - name: emoji
+    description: Operationen rund um Emojis
+paths:
+  /User:
+    get:
+      tags:
+        - user
+      summary: Benutzer einloggen
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Erfolgreicher Login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  message:
+                    type: string
+        '400':
+          description: Login fehlgeschlagen
+    post:
+      tags:
+        - user
+      summary: Neuen Benutzer erstellen
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: Benutzer erfolgreich erstellt
+        '400':
+          description: Benutzername und Passwort erforderlich
+        '500':
+          description: Interner Serverfehler
+  /addChat:
+    post:
+      tags:
+        - chat
+      summary: Neuen Chat erstellen
+      operationId: createChat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                User1:
+                  type: string
+                User2:
+                  type: string
+      responses:
+        '201':
+          description: Chat erfolgreich erstellt
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chatID:
+                    type: integer
+                  message:
+                    type: string
+        '400':
+          description: Benutzer fehlt
+        '500':
+          description: Interner Serverfehler
+  /removeChat:
+    delete:
+      tags:
+        - chat
+      summary: Chat löschen
+      operationId: deleteChat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ChatID:
+                  type: integer
+      responses:
+        '201':
+          description: Chat erfolgreich gelöscht
+        '500':
+          description: Interner Serverfehler
+  /Message:
+    post:
+      tags:
+        - message
+      summary: Nachricht speichern
+      operationId: saveMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ChatID:
+                  type: integer
+                UserID:
+                  type: integer
+                Username:
+                  type: string
+                TextMessage:
+                  type: string
+      responses:
+        '201':
+          description: Nachricht erfolgreich gespeichert
+        '500':
+          description: Interner Serverfehler
+  /Chat:
+    get:
+      tags:
+        - chat
+      summary: Chat abrufen
+      operationId: getChat
+      parameters:
+        - name: ChatID
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Erfolgreiche Abfrage
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chatHistory:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+                  message:
+                    type: string
+        '500':
+          description: Interner Serverfehler
+  /emoji:
+    get:
+      tags:
+        - emoji
+      summary: Emojis abrufen
+      operationId: getEmojis
+      responses:
+        '200':
+          description: Erfolgreiche Abfrage
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    char:
+                      type: string
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    Message:
+      type: object
+      properties:
+        UserID:
+          type: integer
+        Username:
+          type: string
+        TextMessage:
+          type: string
