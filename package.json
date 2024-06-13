@@ -32,6 +32,8 @@
 
     "mysql2": "^3.9.9",
 
+    "socket.io": "^4.7.5",
+
     "swagger-jsdoc": "^6.2.8",
 
     "swagger-ui-express": "^5.0.1",

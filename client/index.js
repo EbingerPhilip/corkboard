@@ -2,143 +2,169 @@ document.addEventListener("DOMContentLoaded", async () => {
   const form = document.getElementById("message-form");
   const input = document.getElementById("input");
   const messageContainer = document.getElementById("messages");
-  const userIdInput = document.getElementById("user-id");
   const chatTitle = document.getElementById("chat-title");
+  const usernameLink = document.getElementById('username-link');
   const emojiButton = document.getElementById('emoji-button');
   const emojiList = document.getElementById('emoji-list');
 
-
-  emojiButton.textContent = '😊';
-  emojiButton.classList.add('button', 'is-rounded', 'is-small');
-  form.appendChild(emojiButton);
-
-
-  let ws;
-  let targetUserId = null;
+  let socket;
+  let targetId;
+  let isGroupChat = false;
+  let username;
   let emojis = [];
 
+  function promptForUserId() {
+    return prompt("Enter your user ID:");
+  }
+
+  username = promptForUserId() || "Anonymous";
+
+  // Set the username in the profile section
+  usernameLink.textContent = `User ${username}`;
 
   async function loadEmojis() {
     try {
-      //sendet HTTP Req und gibt Promise zurück; welches auf Antwort wartet + Req an Endpunkt /emoji gesendet
-      //'await' wartet das Promis der Fetch Funktion aufgelöst wird; Code haltet an bis Anfrage abgeschlossen
       const response = await fetch(`/emoji`);
-      emojis = await response.json();                           //Wartet das PRomise aufgelöst wird und JSON Objekt zurück gibt
-      displayEmojis();                                          //Zeigt dann Emojis an
+      emojis = await response.json();
+      console.log(emojis); // Überprüfen Sie die Emojis im Browser-Log
+      displayEmojis();
     } catch (error) {
       console.error('Error fetching emojis:', error);
     }
   }
 
-  await loadEmojis();       //asynchrone Funktion loadEmojis aufgerufen und wartet, dass die Funktion abgeschlossen wird, bevor der Code weiter ausgeführt wird
+  await loadEmojis();
 
-
-  function connectWebSocket(userId) {
-    if (ws && ws.readyState !== WebSocket.CLOSED && ws.readyState !== WebSocket.CLOSING) {
-      ws.close();
-    }
-    ws = new WebSocket(`ws://${window.location.host}`);
-    ws.addEventListener("open", () => {
-      console.log("WebSocket connection opened");
-      ws.send(JSON.stringify({type: "init", userId}));
-    });
-
-    ws.addEventListener("message", (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "init") {
-        // Initial messages are ignored for now
-      } else if (data.type === "direct") {
-        // Only display messages from the current chat
-        if (data.fromUserId === targetUserId || data.toUserId === targetUserId) {
-          displayMessages([{text: `${data.fromUserId}: ${data.text}`, timestamp: data.timestamp}], true);
-        }
-      }
-    });
-
-    ws.addEventListener("error", (error) => {
-      console.error("WebSocket error:", error);
-    });
-
-    ws.addEventListener("close", () => {
-      console.log("WebSocket connection closed");
+  function displayEmojis() {
+    emojis.forEach(emoji => {
+      const option = document.createElement('option');
+      option.value = emoji.character; // Stellen Sie sicher, dass die API ein Feld 'character' enthält
+      emojiList.appendChild(option);
     });
   }
 
-  userIdInput.addEventListener("change", () => {
-    const userId = userIdInput.value.trim();
-    if (userId) {
-      connectWebSocket(userId);
-      usernameLink.href = `profile.html?userId=${userId}&username=Username`;
-    }
-  });
-
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const userId = userIdInput.value.trim();
-    const messageText = input.value.trim();
-
-    if (messageText && userId && targetUserId && ws && ws.readyState === WebSocket.OPEN) {
-      const message = {
-        type: "direct",
-        toUserId: targetUserId,
-        text: messageText,
-        timestamp: Date.now()
-      };
-      ws.send(JSON.stringify(message));
-      input.value = "";
-      displayMessages([{text: `You: ${messageText}`, timestamp: Date.now()}], true);
-    }
-  });
-
-  function displayMessages(messages, append = false) {
-    if (!append) {
-      messageContainer.innerHTML = "";
-    }
-    messages.forEach((msg) => {
-      const messageWrapper = document.createElement("div");
-      messageWrapper.classList.add("message-bubble", "box");
-      if (msg.fromUserId === userIdInput.value) {
-        messageWrapper.classList.add("you");
-      }
-      const messageText = document.createElement("p");
-      messageText.classList.add("text");
-      messageText.textContent = msg.text.startsWith("You: ") ? `${userIdInput.value}: ${msg.text.substring(5)}` : msg.text;
-
-      messageWrapper.append(messageText);
-      messageContainer.prepend(messageWrapper);
-    });
+  function initSocket() {
+    return io();
   }
 
-  document.querySelectorAll(".menu-list a").forEach(chatLink => {
-    chatLink.addEventListener("click", (event) => {
-      event.preventDefault();
-      chatTitle.textContent = event.target.textContent;
-      targetUserId = event.target.getAttribute("data-user-id");
-      loadChatMessages(targetUserId);
+  function connectSocket() {
+    socket = initSocket();
+
+    socket.on('connect', () => {
+      console.log('Connected to server');
+      socket.emit('init', username);
     });
-  });
 
-  function loadChatMessages(userId) {
-    messageContainer.innerHTML = "";
-    // For now, this function does nothing.
-    // You could fetch messages from the server here if needed.
-  }
-
-  emojiButton.addEventListener('click', (event) => {
-    //prüft ob Emoji im Array vorhanden
-    if (emojis.length > 0) {
-      //zeigt nur aktuelle Emojis an (fall doppelter Klick auf Button)
-      emojiList.innerHTML = '';
-      //durchlaufen Array; fügen für jedes Emoji ein option-Element in die Emoji-Liste (datalist) ein
-      //ermöglicht aus aktualisierten Liste auszuwählen
-      emojis.forEach(emoji => {
-        emojiList.insertAdjacentHTML('beforeend', `<option value="${emoji.character}"></option>`);
+    socket.on('init', (data) => {
+      console.log('Initialized with messages:', data.messages);
+      data.messages.forEach(msg => {
+        displayMessage(msg.text, msg.fromUserId === username, msg.fromUserId, msg.timestamp);
       });
-      //Nach dem Aktualisieren der Liste wird der Fokus auf das Eingabefeld gesetzt
-      input.focus();
+    });
+
+    socket.on('direct', (data) => {
+      if (!isGroupChat && data.fromUserId === targetId) {
+        console.log('Received direct message', data);
+        displayMessage(data.text, data.fromUserId === username, data.fromUserId, data.timestamp);
+      }
+    });
+
+    socket.on('group', (data) => {
+      if (isGroupChat && data.groupId === targetId) {
+        console.log('Received group message', data);
+        displayMessage(data.text, data.fromUserId === username, data.fromUserId, data.timestamp);
+      }
+    });
+
+  }
+
+  connectSocket();
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (input.value && targetId) {
+      const timestamp = new Date().toISOString();
+      if (isGroupChat) {
+        sendGroupMessage(socket, targetId, input.value);
+      } else {
+        sendMessage(socket, targetId, input.value);
+      }
+      displayMessage(input.value, true, username, timestamp);
+      input.value = '';
     }
   });
 
+  document.querySelectorAll('.menu-list a').forEach(chatLink => {
+    chatLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      const chatName = event.target.textContent;
+      chatTitle.textContent = chatName;
+      targetId = event.target.getAttribute('data-user-id') || event.target.getAttribute('data-group-id');
+      isGroupChat = event.target.hasAttribute('data-group-id');
+      loadChatMessages(targetId, isGroupChat);
+    });
+  });
+
+  function sendMessage(socket, toUserId, message) {
+    const timestamp = new Date().toISOString();
+    socket.emit('direct', {
+      toUserId: toUserId,
+      text: message,
+      timestamp: timestamp
+    });
+  }
+
+  function sendGroupMessage(socket, groupId, message) {
+    const timestamp = new Date().toISOString();
+    socket.emit('group', {
+      groupId: groupId,
+      text: message,
+      timestamp: timestamp
+    });
+  }
+
+  function displayMessage(message, isOwnMessage, fromUserId, timestamp) {
+    const item = document.createElement('div');
+    item.classList.add('message-bubble');
+    if (isOwnMessage) {
+      item.classList.add('you');
+    } else {
+      item.classList.add('them');
+    }
+
+    const messageHeader = document.createElement('div');
+    messageHeader.classList.add('message-header');
+    messageHeader.textContent = isOwnMessage ? `You` : `User ${fromUserId}`;
+
+    const messageText = document.createElement('div');
+    messageText.classList.add('message-text');
+    messageText.textContent = message;
+
+    const messageTimestamp = document.createElement('div');
+    messageTimestamp.classList.add('message-timestamp');
+    messageTimestamp.textContent = new Date(timestamp).toLocaleTimeString('de-DE', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    item.appendChild(messageHeader);
+    item.appendChild(messageText);
+    item.appendChild(messageTimestamp);
+
+    messageContainer.appendChild(item);
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+  }
+
+  function loadChatMessages(targetId, isGroupChat) {
+    messageContainer.innerHTML = '';
+    // Implement your chat loading logic here
+    // Example:
+    // fetch(`/chat/messages/${targetId}`)
+    //   .then(response => response.json())
+    //   .then(data => {
+    //     data.messages.forEach(msg => {
+    //       displayMessage(msg.text, msg.fromUserId === username, msg.fromUserId, msg.timestamp);
+    //     });
+    //   });
+  }
 });
-
-
