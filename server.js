@@ -5,6 +5,7 @@ const http = require("http");
 const socketIo = require('socket.io');
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
+const OpenAI = require("openai");
 
 const User = require('./models/users');
 const Chat = require('./models/chats');
@@ -21,6 +22,10 @@ const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const API_KEY = 'u3O0f9JEeVZmSd61OPE6jQ==RH3eJvBNB0kYkB9n';
+
+const openai = new OpenAI({
+  apiKey: 'sk-proj-PrZCM8dxe4eVG2Ep5aX7T3BlbkFJsXlDN6wVxvvDM5bt2fiv'
+});
 
 let clients = {};
 const groups = {
@@ -83,6 +88,32 @@ io.on('connection', (socket) => {
     }
   });
 });
+
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: message }],
+      max_tokens: 2048,
+      temperature: 1,
+    });
+
+    console.log('OpenAI response:', response);
+
+    if (response && response.choices && response.choices.length > 0) {
+      res.json({ response: response.choices[0].message.content });
+    } else {
+      throw new Error('No response choices available');
+    }
+  } catch (error) {
+    console.error('Error handling chat request:', error.message);
+    res.status(500).json({ error: 'An error occurred while processing your request.', details: error.message });
+  }
+});
+
+
 
 app.get('/User', async (req, res) => {
   try {
