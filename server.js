@@ -17,6 +17,11 @@ const wss = new WebSocket.Server({ server });
 
 
 app.use(express.json());
+
+//app.get('/', (req, res) => {
+  //res.sendFile(path.join(__dirname, 'client', 'login.html'));
+//});
+
 app.use(express.static(path.join(__dirname, "client")));
 
 const API_KEY = 'u3O0f9JEeVZmSd61OPE6jQ==RH3eJvBNB0kYkB9n';
