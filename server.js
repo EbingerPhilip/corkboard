@@ -104,16 +104,18 @@ app.post('/newUser', async function (req, res) {
   }
 });
 
-app.put('/addInfo', async function (req, res) {
+//handles updates to the user profile information
+app.put('/updateInfo', async function (req, res) {
   try {
-    const { email, name, phone } = req.body;
+    const { username, email, name, phone } = req.body;
 
-    const user = await User.findByUsername(username); // Assuming email is unique and used as identifier
+    const user = await User.findByUsername(username);  //findet User
+    //updated User info
     if (user) {
       user.email = email;
       user.name = name;
       user.phone = phone;
-      await user.saveUserinfo();
+      await user.saveUserinfo();   //calls 'saveUserInfo um update Info in DB zu speichern
       res.status(201).send('Userinfo saved successfully');
     } else {
       res.status(400).send('User not found');

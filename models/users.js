@@ -51,17 +51,18 @@ class User {
         }
     }
 
+    //update user info in DB
     async saveUserinfo() {
         const sql = `
-            UPDATE users SET 
-            email = ?,
+            UPDATE users SET            //zeigt das wir den user table updaten
+            email = ?,                  // ? nur placeholder
             name = ?,
             phone = ?
-            WHERE username = ?
+            WHERE username = ?          //zeigt welcher user geupdated wird
         `;
+        //this. ....  array of values that will replace the placeholders (?) in the SQL query
         await db.execute(sql, [this.email, this.name, this.phone, this.username]);
     }
-
 
 
     // Database functions start here
