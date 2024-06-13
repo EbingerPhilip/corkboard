@@ -4,6 +4,8 @@ const path = require("path");
 const http = require("http");
 const WebSocket = require("ws");
 const bodyParser = require('body-parser');
+const swaggerUi = require("swagger-ui-express");
+const YAML = require("yamljs"); // Installiere mit: npm install yamljs
 
 const User = require('./models/users');
 const Chat = require('./models/chats');
@@ -23,6 +25,8 @@ app.use(express.json());
 //});
 
 app.use(express.static(path.join(__dirname, "client")));
+const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const API_KEY = 'u3O0f9JEeVZmSd61OPE6jQ==RH3eJvBNB0kYkB9n';
 
