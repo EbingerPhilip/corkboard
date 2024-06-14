@@ -57,7 +57,7 @@ class User {
             UPDATE users SET            
             email = ?,                  
             name = ?,
-            phone = ?
+            phone = ?,
             WHERE username = ?          
         `;
 

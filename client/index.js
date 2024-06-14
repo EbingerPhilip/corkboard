@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let username;
   let userId;
   let emojis = [];
+  let userID;
 
   emojiButton.textContent = '😊';
   emojiButton.classList.add('button', 'is-rounded', 'is-small');
@@ -31,7 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   userId = params.get('userId');
 
-  // Hier dann mit Login verknüpfen
+  //Hier dann mit Login verknüpfen
  do {
     userId = promptForUserId();
   } while (userId.trim() === "");
@@ -39,22 +40,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 */
 
   const params = new URLSearchParams(window.location.search);
-  userId = params.get('userId');
-
-
-  if (!userId) {
-    // Hier dann mit Login verknüpfen
-    do {
-      userId = prompt("Enter your user ID:");
-    } while (userId.trim() === "");
-    window.location.href = `/index.html?userId=${userId}`;
-  }
+  userId = params.get('userID');
 
 
 
   // Benutzerinformationen abrufen und anzeigen
   try {
-    const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`, {
+    const response = await fetch(`/findUser?UserId=${encodeURIComponent(userID)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -65,8 +57,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       const user = await response.json();
       username = user.username;
       usernameLink.textContent = username;
-      userIdDisplay.textContent = `ID: ${userId}`;
-      usernameLink.href = `/profile.html?userId=${userId}`
+      userIdDisplay.textContent = `ID: ${userID}`;
+      usernameLink.href = `/profile.html?userId=${userID}`
     } else {
       console.error("Kein Benutzer gefunden");
     }
