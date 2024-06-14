@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
-    <script defer src="login.js"></script>
+    <script src="login.js"></script>
 </head>
 <body>
 <section class="hero is-fullheight">
@@ -19,18 +19,18 @@
                             <div class="field">
                                 <label class="label">Username</label>
                                 <div class="control">
-                                    <input class="input" type="text" name="username" placeholder="Enter your username" required>
+                                    <input class="input" type="text" name="username" id="usernameBox" placeholder="Enter your username" required>
                                 </div>
                             </div>
                             <div class="field">
                                 <label class="label">Password</label>
                                 <div class="control">
-                                    <input class="input" type="password" name="password" placeholder="Enter your password" required>
+                                    <input class="input" type="password" name="password" id="passwordBox" placeholder="Enter your password" required>
                                 </div>
                             </div>
                             <div class="field">
                                 <div class="control">
-                                    <button class="button is-link is-fullwidth" type="submit">Login</button>
+                                    <button class="button is-link is-fullwidth" type="submit" onclick="loginRequest()" >Login</button>
                                 </div>
                             </div>
                             <div class="field">

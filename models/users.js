@@ -53,13 +53,12 @@ class User {
 
     //update user info in DB
     async saveUserinfo() {
-        const sql = `
-            UPDATE users SET            //zeigt das wir den user table updaten
-            email = ?,                  // ? nur placeholder
+        const sql = ` UPDATE users SET WHERE username = ?
+            email = ?,
             name = ?,
             phone = ?
-            WHERE username = ?          //zeigt welcher user geupdated wird
-        `;
+            
+            `;
         //this. ....  array of values that will replace the placeholders (?) in the SQL query
         await db.execute(sql, [this.email, this.name, this.phone, this.username]);
     }
@@ -75,12 +74,30 @@ class User {
 
             const user = new User(userData.username, userData.password);
             user.id = userData.id;
-            user.Chats = JSON.parse(userData.Chats);
+            user.Chats =  JSON.parse(userData.Chats);
 
             return user
         } else {
+            console.log("not fund")
             return null; // User not found
         }
+    }
+
+    static async findByUserID(userID) {
+        let sql = `SELECT * FROM users WHERE id = '${userID}'`;
+        const [users, _] = await db.execute(sql);
+        if (users.length === 0) {
+            console.log("not fund")
+            return null; // User not found
+        }
+        const userData = users[0];
+
+        const user = new User(userData.username, userData.password);
+        user.id = userData.id;
+        delete user.password;
+        delete user.Chats;
+
+        return user
     }
 
     // adds ChatID to Chats[], returns true if successful
