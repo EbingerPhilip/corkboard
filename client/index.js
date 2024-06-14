@@ -52,8 +52,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   addUserButton.addEventListener("click", async () => {
     const userIdToAdd = userToAddInput.value.trim();
-    console.log("user to add:", userIdToAdd);
-    errorMessage.style.display = "none"; // Fehlermeldung immer ausblenden beim Klicken
+    errorMessage.style.display = "none";
 
     if (userIdToAdd) {
       if (userIdToAdd === username) {
@@ -92,8 +91,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         errorMessage.textContent = "Error during request";
         errorMessage.style.display = "block";
       }
-    } else {
-      errorMessage.style.display = "none"; // Fehlermeldung ausblenden, wenn das Feld leer ist
     }
   });
 
