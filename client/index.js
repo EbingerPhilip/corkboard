@@ -23,15 +23,33 @@ document.addEventListener("DOMContentLoaded", async () => {
   emojiButton.classList.add('button', 'is-rounded', 'is-small');
   form.appendChild(emojiButton);
 
-
+/*
   function promptForUserId() {
     return prompt("Enter your user ID:");
   }
 
+  const params = new URLSearchParams(window.location.search);
+  userId = params.get('userId');
+
   // Hier dann mit Login verknüpfen
-  do {
+ do {
     userId = promptForUserId();
   } while (userId.trim() === "");
+  window.location.href = `/index.html?userId=${userId}`;
+*/
+
+  const params = new URLSearchParams(window.location.search);
+  userId = params.get('userId');
+
+
+  if (!userId) {
+    // Hier dann mit Login verknüpfen
+    do {
+      userId = prompt("Enter your user ID:");
+    } while (userId.trim() === "");
+    window.location.href = `/index.html?userId=${userId}`;
+  }
+
 
 
   // Benutzerinformationen abrufen und anzeigen
@@ -48,6 +66,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       username = user.username;
       usernameLink.textContent = username;
       userIdDisplay.textContent = `ID: ${userId}`;
+      usernameLink.href = `/profile.html?userId=${userId}`
     } else {
       console.error("Kein Benutzer gefunden");
     }
