@@ -1,3 +1,4 @@
+require('dotenv').config();
 const axios = require('axios');
 const express = require("express");
 const path = require("path");
@@ -6,6 +7,7 @@ const socketIo = require('socket.io');
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
 const OpenAI = require("openai");
+
 
 const User = require('./models/users');
 const Chat = require('./models/chats');
@@ -28,7 +30,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 const API_KEY = 'u3O0f9JEeVZmSd61OPE6jQ==RH3eJvBNB0kYkB9n';
 
 const openai = new OpenAI({
-  apiKey: 'sk-proj-PrZCM8dxe4eVG2Ep5aX7T3BlbkFJsXlDN6wVxvvDM5bt2fiv'
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 let clients = {};
