@@ -1,3 +1,4 @@
+require('dotenv').config();
 const axios = require('axios');
 const express = require("express");
 const path = require("path");
@@ -10,6 +11,7 @@ const socketIo = require('socket.io');
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
 const OpenAI = require("openai");
+
 
 const User = require('./models/users');
 const Chat = require('./models/chats');
@@ -27,6 +29,10 @@ app.use(express.static(path.join(__dirname, "client"), { index : 'login.html' })
 app.use(cookieParser());
 app.use(['/addChat', '/removeChat', '/Message','/Chat'],cookieJwtAuth);
 
+//app.get('/', (req, res) => {
+//res.sendFile(path.join(__dirname, 'client', 'login.html'));
+//});
+
 const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
@@ -34,7 +40,7 @@ const API_KEY = 'u3O0f9JEeVZmSd61OPE6jQ==RH3eJvBNB0kYkB9n';
 const secreteKey = "BigDog"
 
 const openai = new OpenAI({
-  apiKey: 'sk-proj-PrZCM8dxe4eVG2Ep5aX7T3BlbkFJsXlDN6wVxvvDM5bt2fiv'
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 let clients = {};
@@ -76,20 +82,61 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('direct', (data) => {
+  socket.on('direct', async (data) => {
     if (typeof data === 'object' && data.toUserId && data.text) {
-      const targetSocket = clients[data.toUserId];
-      if (targetSocket) {
-        targetSocket.emit('direct', {
-          fromUserId: socket.userId,
-          text: data.text,
-          timestamp: data.timestamp || new Date().toISOString()
-        });
+      try {
+        const targetSocket = clients[data.toUserId];
+
+        // Benutzername des Absenders abrufen
+        const senderResponse = await axios.get(`http://localhost:3000/findUser?UserId=${socket.userId}`);
+        const senderUsername = senderResponse.data.username;
+
+        // Benutzername des Empfängers abrufen
+        const receiverResponse = await axios.get(`http://localhost:3000/findUser?UserId=${data.toUserId}`);
+        const receiverUsername = receiverResponse.data.username;
+
+        if (targetSocket) {
+          targetSocket.emit('direct', {
+            fromUserId: socket.userId,
+            text: data.text,
+            timestamp: data.timestamp || new Date().toISOString()
+          });
+          io.to(targetSocket.id).emit('create-chat', {
+            chatName: senderUsername,
+            userId: socket.userId
+          });
+        } else {
+          console.log('Empfänger ist offline, Nachricht und Chat werden in der DB gespeichert.');
+          // Markiert für DB-Anbindung: Chat und Nachricht in der DB speichern
+          // Beispiel-Platzhalter:
+          // saveChatToDatabase(socket.userId, data.toUserId, data.text, data.timestamp);
+        }
+      } catch (error) {
+        console.error('Fehler beim Abrufen des Benutzernamens:', error);
       }
     } else {
       console.warn('Received invalid data format for direct event:', data);
     }
   });
+
+  socket.on('create-chat', (data) => {
+    if (typeof data === 'object' && data.chatName && data.userId) {
+      const targetSocket = clients[data.userId];
+      if (targetSocket) {
+        console.log(`Erstelle Chat für User ${data.userId} mit Chatname ${data.chatName}`);
+        targetSocket.emit('create-chat', {
+          chatName: data.chatName,
+          userId: data.userId
+        });
+      } else {
+        console.log('Empfänger ist offline, Chat wird in der DB gespeichert.');
+        // Markiert für DB-Anbindung: Chat in der DB speichern
+      }
+    } else {
+      console.warn('Received invalid data format for create-chat event:', data);
+    }
+  });
+
 
   socket.on('disconnect', () => {
     if (socket.userId) {
@@ -148,8 +195,40 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-//adds a new User to our Database
-//takes username and password
+
+
+app.get('/User', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const user = await User.findByUsername(username);
+    const valid = user.checkPassword(password);
+
+    if (valid) {
+      res.status(200).json({ user, message: "Login Successful" });
+    } else {
+      res.status(400).json({ message: "Login failed" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/findUser', async function (req, res){
+  const userId = req.query.UserId;
+  const user = await User.findByUserID(userId);
+  // const {userId} = req.body;
+  // const user = await User.findByUserID(userId);
+
+  console.log("User: " + user)
+
+  if (!user) {
+    res.status(400).send("no user found")
+  }else{
+    res.status(200).json(user)
+  }
+})
+
 app.post('/newUser', async function (req, res) {
   try {
     const { username, password } = req.body;

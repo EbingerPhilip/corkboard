@@ -63,6 +63,13 @@
       right: 10px;
       margin-top: 0;
     }
+
+    .error-message {
+      color: red;
+      font-size: 0.8em;
+      display: none;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -73,20 +80,31 @@
         <figure class="image is-128x128 mt-5" style="margin-right: 20px;">
           <img class="is-rounded" src="images/img.png" alt="Profilbild">
         </figure>
-        <a href="#" id="username-link" class="username is-size-3 has-text-info" style="margin-bottom: 10px;">Username</a>
+        <div>
+          <a href="/profile.html?userId=${userId}" id="username-link" class="username is-size-3 has-text-info" style="margin-bottom: 10px;">Username</a>
+          <p id="user-id-display" class="is-size-6 has-text-grey"></p>
+        </div>
       </div>
       <p class="menu-label is-size-4 ml-5">
         Chats
       </p>
-      <ul class="menu-list">
-        <li><a class="my-1.5 py-4" href="#" data-user-id="1">Chat 1</a></li>
-        <li><a class="my-1.5 py-4" href="#" data-user-id="2">Chat 2</a></li>
-        <li><a class="my-1.5 py-4" href="#" data-user-id="3">Chat 3</a></li>
-        <li><a class="my-1.5 py-4" href="#" data-user-id="4">Chat 4</a></li>
-        <li><a class="my-1.5 py-4" href="#" data-group-id="1">Group 1</a></li>
-        <li><a class="my-1.5 py-4" href="#" data-user-id="chatgpt">Chat GPT</a></li>
+      <ul class="menu-list" id="chat-list">
+        <!-- Hier werden die neuen Chats hinzugefügt -->
       </ul>
       <div class="mt-auto">
+        <div class="field">
+          <p id="error-message" class="error-message">User nicht gefunden</p>
+          <div class="field has-addons">
+            <div class="control is-expanded">
+              <input id="UserToAdd" class="input is-rounded" type="text" placeholder="Insert UserID" />
+            </div>
+            <div class="control">
+              <button id="addUserButton" type="button" class="button is-link is-rounded">Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4">
         <div class="field has-addons">
           <div class="control is-expanded">
             <input class="input is-rounded" type="text" placeholder="Search User" />
@@ -102,7 +120,7 @@
     <div class="section is-flex is-flex-direction-column" style="height: 100%;">
       <div class="container">
         <header>
-          <h1 class="title" id="chat-title">Chat 1</h1>
+          <h1 class="title" id="chat-title">Chat</h1>
         </header>
         <div id="messages"></div>
       </div>

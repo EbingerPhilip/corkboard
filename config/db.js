@@ -17,7 +17,6 @@ pool.execute(sql, function (err, result){
    console.log(result)
 
 });
-//test
 
 
 

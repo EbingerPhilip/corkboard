@@ -47,24 +47,25 @@ class User {
             return true
         } else {
             return false
-            console.log("bad Passowrd")
+            console.log("bad Passoword")
         }
     }
 
-    //update user info in DB
+
     async saveUserinfo() {
-        const sql = ` UPDATE users SET WHERE username = ?
-            email = ?,
+        const sql = `
+            UPDATE users SET            
+            email = ?,                  
             name = ?,
             phone = ?
-            
-            `;
-        //this. ....  array of values that will replace the placeholders (?) in the SQL query
+            WHERE username = ?          
+        `;
+
         await db.execute(sql, [this.email, this.name, this.phone, this.username]);
     }
 
 
-    // Database functions start here
+
 
     static async findByUsername(username) {
         let sql = `SELECT * FROM users WHERE username = '${username}'`;
@@ -100,7 +101,7 @@ class User {
         return user
     }
 
-    // adds ChatID to Chats[], returns true if successful
+
     static async addNewChat(chatID, UserID) {
         if (!Number.isInteger(chatID)) {
             console.log("Chat: " + chatID + " has not been initalized correctly")

@@ -11,17 +11,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const backButton = document.getElementById('back-button');
 
 
-    document.getElementById('profile-username').textContent = `User ${userId}`;
+    async function loadUserProfile(userId) {
+        try {
+            const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`);
+            const user = await response.json();
 
-    // Beispiel: Daten vom Server abrufen und im Profil anzeigen
-    // Hier sind Platzhalterdaten
-    const email = "user@example.com";
-    const name = "John Doe";
-    const phone = "123-456-7890";
+            document.getElementById('profile-username').textContent = user.username;
+            emailElement.textContent = user.email;
+            nameElement.textContent = user.name;
+            phoneElement.textContent = user.phone;
+        } catch (error) {
+            console.error('Error loading user profile:', error);
+        }
+    }
 
-    emailElement.textContent = email;
-    nameElement.textContent = name;
-    phoneElement.textContent = phone;
+    loadUserProfile(userId);
 
     const editButton = document.getElementById('edit-button');
     const saveButton = document.getElementById('save-button');
