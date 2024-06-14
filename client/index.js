@@ -83,6 +83,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
 
+      // Überprüfen, ob der Chat bereits existiert
+      const existingChat = Array.from(chatList.children).find(
+          li => li.querySelector('a').dataset.userId === userIdToAdd
+      );
+
+      if (existingChat) {
+        console.error("Chat already exists");
+        errorMessage.textContent = "Chat already exists";
+        errorMessage.style.display = "block";
+        return;
+      }
+
       try {
         const response = await fetch(`/findUser?UserId=${encodeURIComponent(userIdToAdd)}`, {
           method: 'GET',

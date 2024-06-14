@@ -68,6 +68,7 @@
       color: red;
       font-size: 0.8em;
       display: none;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -79,8 +80,10 @@
         <figure class="image is-128x128 mt-5" style="margin-right: 20px;">
           <img class="is-rounded" src="images/img.png" alt="Profilbild">
         </figure>
-        <a href="/profile.html" id="username-link" class="username is-size-3 has-text-info" style="margin-bottom: 10px;">Username</a>
-        <p id="user-id-display" class="is-size-6 has-text-grey"></p>
+        <div>
+          <a href="/profile.html" id="username-link" class="username is-size-3 has-text-info" style="margin-bottom: 10px;">Username</a>
+          <p id="user-id-display" class="is-size-6 has-text-grey"></p>
+        </div>
       </div>
       <p class="menu-label is-size-4 ml-5">
         Chats
@@ -89,15 +92,17 @@
         <!-- Hier werden die neuen Chats hinzugefügt -->
       </ul>
       <div class="mt-auto">
-        <div class="field has-addons">
-          <div class="control is-expanded">
-            <input id="UserToAdd" class="input is-rounded" type="text" placeholder="Add Chat" />
-          </div>
-          <div class="control">
-            <button id="addUserButton" type="button" class="button is-link is-rounded">Add</button>
+        <div class="field">
+          <p id="error-message" class="error-message">User nicht gefunden</p>
+          <div class="field has-addons">
+            <div class="control is-expanded">
+              <input id="UserToAdd" class="input is-rounded" type="text" placeholder="Insert UserID" />
+            </div>
+            <div class="control">
+              <button id="addUserButton" type="button" class="button is-link is-rounded">Add</button>
+            </div>
           </div>
         </div>
-        <p id="error-message" class="error-message">User nicht gefunden</p>
       </div>
       <div class="mt-4">
         <div class="field has-addons">
