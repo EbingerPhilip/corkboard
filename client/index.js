@@ -226,7 +226,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   connectSocket();
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const messageText = input.value.trim().toLowerCase();
     if (input.value && targetId) {
