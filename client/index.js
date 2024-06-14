@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const messageContainer = document.getElementById("messages");
   const chatTitle = document.getElementById("chat-title");
   const usernameLink = document.getElementById("username-link");
+  const userIdDisplay = document.getElementById("user-id-display");
   const emojiButton = document.getElementById("emoji-button");
   const emojiList = document.getElementById("emoji-list");
   const addUserButton = document.getElementById("addUserButton");
@@ -15,6 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let targetId;
   let isGroupChat = false;
   let username;
+  let userId;
   let emojis = [];
 
   function promptForUserId() {
@@ -23,11 +25,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Hier dann mit Login verknüpfen
   do {
-    username = promptForUserId();
-  } while (username.trim() === "");
+    userId = promptForUserId();
+  } while (userId.trim() === "");
 
-  // Setze den Benutzernamen im Profilbereich
-  usernameLink.textContent = `User ${username}`;
+  // Benutzerinformationen abrufen und anzeigen
+  try {
+    const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.status === 200) {
+      const user = await response.json();
+      username = user.username;
+      usernameLink.textContent = username;
+      userIdDisplay.textContent = `ID: ${userId}`;
+    } else {
+      console.error("Kein Benutzer gefunden");
+    }
+  } catch (error) {
+    console.error("Fehler bei der Anfrage:", error);
+  }
 
   async function loadEmojis() {
     try {
@@ -56,7 +76,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     errorMessage.style.display = "none"; // Fehlermeldung immer ausblenden beim Klicken
 
     if (userIdToAdd) {
-      if (userIdToAdd === username) {
+      if (userIdToAdd === userId) {
         console.error("You cannot add your own ID");
         errorMessage.textContent = "You cannot add your own ID";
         errorMessage.style.display = "block";
@@ -131,13 +151,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     socket.on('connect', () => {
       console.log('Connected to server');
-      socket.emit('init', username);
+      socket.emit('init', userId);
     });
 
     socket.on('init', (data) => {
       console.log('Initialized with messages:', data.messages);
-      data.messages.forEach(msg => {
-        displayMessage(msg.text, msg.fromUserId === username, msg.fromUserId, msg.timestamp);
+      data.messages.forEach(async msg => {
+        const senderUsername = await getUsernameById(msg.fromUserId);
+        displayMessage(msg.text, msg.fromUserId === userId, senderUsername, msg.timestamp);
       });
     });
 
@@ -157,12 +178,12 @@ document.addEventListener("DOMContentLoaded", async () => {
           const sender = await response.json();
           const senderUsername = sender.username;
 
-          if (senderId !== username) {
+          if (senderId !== userId) {
             addChatToUI(senderUsername, senderId);
           }
 
           if (!isGroupChat && senderId === targetId) {
-            displayMessage(data.text, data.fromUserId === username, data.fromUserId, data.timestamp);
+            displayMessage(data.text, data.fromUserId === userId, senderUsername, data.timestamp);
           }
         } else {
           console.error("Kein Benutzer gefunden");
@@ -175,7 +196,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     socket.on('group', (data) => {
       if (isGroupChat && data.groupId === targetId) {
         console.log('Received group message', data);
-        displayMessage(data.text, data.fromUserId === username, data.fromUserId, data.timestamp);
+        displayMessage(data.text, data.fromUserId === userId, data.fromUserId, data.timestamp);
       }
     });
 
@@ -231,7 +252,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  function displayMessage(message, isOwnMessage, fromUserId, timestamp) {
+  async function getUsernameById(userId) {
+    try {
+      const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 200) {
+        const user = await response.json();
+        return user.username;
+      } else {
+        console.error("Kein Benutzer gefunden");
+        return "Unknown";
+      }
+    } catch (error) {
+      console.error("Fehler bei der Anfrage:", error);
+      return "Unknown";
+    }
+  }
+
+  async function displayMessage(message, isOwnMessage, senderUsername, timestamp) {
     const item = document.createElement('div');
     item.classList.add('message-bubble');
     if (isOwnMessage) {
@@ -242,7 +285,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const messageHeader = document.createElement('div');
     messageHeader.classList.add('message-header');
-    messageHeader.textContent = isOwnMessage ? `You` : `User ${fromUserId}`;
+    messageHeader.textContent = isOwnMessage ? `You` : `${senderUsername}`;
 
     const messageText = document.createElement('div');
     messageText.classList.add('message-text');

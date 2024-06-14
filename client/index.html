@@ -21,7 +21,6 @@
       flex-direction: column;
       justify-content: flex-end;
       padding: 10px;
-      margin-bottom: 10px;
     }
 
     .message-bubble {
@@ -70,23 +69,6 @@
       font-size: 0.8em;
       display: none;
     }
-
-    .chat-link {
-      padding: 10px;
-      margin-bottom: 5px;
-      display: block;
-      text-align: center;
-      text-decoration: none;
-      color: cadetblue;
-      font-weight: bold;
-      border: 1px solid #dbdbdb;
-      border-radius: 5px;
-      font-size: 1.2em; /* Größere Schriftgröße */
-    }
-
-    .chat-link:hover {
-      background-color: #f5f5f5;
-    }
   </style>
 </head>
 <body>
@@ -98,6 +80,7 @@
           <img class="is-rounded" src="images/img.png" alt="Profilbild">
         </figure>
         <a href="/profile.html" id="username-link" class="username is-size-3 has-text-info" style="margin-bottom: 10px;">Username</a>
+        <p id="user-id-display" class="is-size-6 has-text-grey"></p>
       </div>
       <p class="menu-label is-size-4 ml-5">
         Chats

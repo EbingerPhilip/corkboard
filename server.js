@@ -17,6 +17,10 @@ const io = socketIo(server);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "client")));
 
+//app.get('/', (req, res) => {
+//res.sendFile(path.join(__dirname, 'client', 'login.html'));
+//});
+
 const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
