@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
     const userId = params.get('userId');
-    const username = params.get('username');
 
     const emailElement = document.getElementById('profile-email');
     const nameElement = document.getElementById('profile-name');
@@ -12,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const backButton = document.getElementById('back-button');
 
 
-    document.getElementById('profile-username').textContent = username;
+    document.getElementById('profile-username').textContent = `User ${userId}`;
 
     // Beispiel: Daten vom Server abrufen und im Profil anzeigen
     // Hier sind Platzhalterdaten
@@ -54,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     backButton.addEventListener('click', () => {
-        window.location.href = '/index.html';
+        window.location.href = `/index.html?userId=${userId}`;
     });
 
     function toggleEdit(isEditing) {
@@ -82,9 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const updatedName = document.getElementById('input-name').value;
         const updatedPhone = document.getElementById('input-phone').value;
 
-        const username = document.getElementById('profile-username').textContent;
-
-        try {
             //sends PUT req to updateInfo
             const response = await fetch('/updateInfo', {
                 method: 'PUT',
@@ -104,9 +100,6 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 console.error('Failed to save userinfo');
             }
-        } catch (error) {
-            console.error('Error saving userinfo:', error);
-        }
     }
 });
 

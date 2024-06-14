@@ -22,7 +22,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     return prompt("Enter your user ID:");
   }
 
-  username = promptForUserId() || "Anonymous";
+  const params = new URLSearchParams(window.location.search);
+  username = params.get('userId') || promptForUserId() || "Anonymous";
+
+  usernameLink.href = `/profile.html?userId=${username}`;
 
   // Set the username in the profile section
   usernameLink.textContent = `User ${username}`;
