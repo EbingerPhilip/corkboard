@@ -19,6 +19,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   let userId;
   let emojis = [];
 
+  emojiButton.textContent = '😊';
+  emojiButton.classList.add('button', 'is-rounded', 'is-small');
+  form.appendChild(emojiButton);
+
+
   function promptForUserId() {
     return prompt("Enter your user ID:");
   }
@@ -27,6 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   do {
     userId = promptForUserId();
   } while (userId.trim() === "");
+
 
   // Benutzerinformationen abrufen und anzeigen
   try {
@@ -208,7 +214,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     socket.on('group', (data) => {
       if (isGroupChat && data.groupId === targetId) {
         console.log('Received group message', data);
-        displayMessage(data.text, data.fromUserId === userId, data.fromUserId, data.timestamp);
+        displayMessage(data.text, data.fromUserId === username, data.fromUserId, data.timestamp);
       }
     });
 
@@ -222,6 +228,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+    const messageText = input.value.trim().toLowerCase();
     if (input.value && targetId) {
       const timestamp = new Date().toISOString();
       if (isGroupChat) {
@@ -232,6 +239,26 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
       displayMessage(input.value, true, username, timestamp);
       input.value = '';
+      if (targetId === 'chatgpt') {
+        try {
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({message: messageText})
+          });
+
+          const result = await response.json();
+          if (result.response) {
+            displayMessage(`ChatGPT: ${result.response}`, false, 'ChatGPT', timestamp);
+          } else {
+            console.error('Error: No response from ChatGPT');
+          }
+        } catch (error) {
+          console.error('Error sending message to ChatGPT:', error);
+        }
+      }
     }
   });
 
