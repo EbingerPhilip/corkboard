@@ -25,7 +25,7 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "client"), { index : 'login.html' }));
+app.use(express.static(path.join(__dirname, "client"),{ index : 'login.html' }));
 app.use(cookieParser());
 app.use(['/addChat', '/removeChat', '/Message','/Chat'],cookieJwtAuth);
 
@@ -150,26 +150,25 @@ io.on('connection', (socket) => {
 //login
 //client sends username and password, server checks for a corresponding User and either sends it or error back.
 app.post('/User', async function (req, res) {
-try {
-  console.log("request arived")
-  const {username, password} = req.body;
-  const user = await User.findByUsername(username)
+  try {
+    const { username, password } = req.body;
+    const user = await User.findByUsername(username);
 
-  if (user.password !== password ) {
-    res.status(403).message("Bad password")
+    if (!user || user.password !== password) {
+      return res.status(403).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign({ id: user.id, username: user.username }, secreteKey, { expiresIn: "30min" });
+    res.cookie("token", token, {
+      httpOnly: true,
+    });
+
+    res.status(200).json({ user: { id: user.id, username: user.username }, token, message: "Login Successful" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
   }
-  delete user.password;
-  const userPayload = {...user}
-
-  const token = jwt.sign(userPayload, secreteKey, {expiresIn: "30min"})
-  res.cookie("token", token, {
-    httpOnly: true,
-  });
-
-  res.status(200).json({ user, message: "Login Successful" });
-
-}catch (err){ console.log(err)}
-})
+});
 
 app.post('/api/chat', async (req, res) => {
     try {
