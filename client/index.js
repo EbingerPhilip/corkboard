@@ -3,9 +3,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const input = document.getElementById("input");
   const messageContainer = document.getElementById("messages");
   const chatTitle = document.getElementById("chat-title");
-  const usernameLink = document.getElementById('username-link');
-  const emojiButton = document.getElementById('emoji-button');
-  const emojiList = document.getElementById('emoji-list');
+  const usernameLink = document.getElementById("username-link");
+  const emojiButton = document.getElementById("emoji-button");
+  const emojiList = document.getElementById("emoji-list");
   const addUserButton = document.getElementById("addUserButton");
   const userToAddInput = document.getElementById("UserToAdd");
   const chatList = document.getElementById("chat-list");
@@ -21,12 +21,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     return prompt("Enter your user ID:");
   }
 
-  //hier dann mit login verknüpfen
+  // Hier dann mit Login verknüpfen
   do {
     username = promptForUserId();
   } while (username.trim() === "");
 
-  // Set the username in the profile section
+  // Setze den Benutzernamen im Profilbereich
   usernameLink.textContent = `User ${username}`;
 
   async function loadEmojis() {
@@ -52,7 +52,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   addUserButton.addEventListener("click", async () => {
     const userIdToAdd = userToAddInput.value.trim();
-    errorMessage.style.display = "none";
+    console.log("user to add:", userIdToAdd);
+    errorMessage.style.display = "none"; // Fehlermeldung immer ausblenden beim Klicken
 
     if (userIdToAdd) {
       if (userIdToAdd === username) {
@@ -77,7 +78,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           console.log("Gefundener Benutzername:", chatUsername);
 
           // Hier den Code ausführen, wenn der Benutzer gefunden wurde
-
           addChatToUI(chatUsername, userIdToAdd);
           userToAddInput.value = "";
           errorMessage.style.display = "none";
@@ -91,26 +91,35 @@ document.addEventListener("DOMContentLoaded", async () => {
         errorMessage.textContent = "Error during request";
         errorMessage.style.display = "block";
       }
+    } else {
+      errorMessage.style.display = "none"; // Fehlermeldung ausblenden, wenn das Feld leer ist
     }
   });
 
   function addChatToUI(username, userId) {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.className = "chat-link";
-    a.href = "#";
-    a.textContent = username;
-    a.dataset.userId = userId;
-    li.appendChild(a);
-    chatList.appendChild(li);
+    // Überprüfen, ob der Chat bereits existiert
+    const existingChat = Array.from(chatList.children).find(
+        li => li.querySelector('a').dataset.userId === userId
+    );
 
-    a.addEventListener("click", (event) => {
-      event.preventDefault();
-      chatTitle.textContent = username;
-      targetId = userId;
-      isGroupChat = false;
-      loadChatMessages(targetId, isGroupChat);
-    });
+    if (!existingChat) {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.className = "chat-link";
+      a.href = "#";
+      a.textContent = username;
+      a.dataset.userId = userId;
+      li.appendChild(a);
+      chatList.appendChild(li);
+
+      a.addEventListener("click", (event) => {
+        event.preventDefault();
+        chatTitle.textContent = username;
+        targetId = userId;
+        isGroupChat = false;
+        loadChatMessages(targetId, isGroupChat);
+      });
+    }
   }
 
   function initSocket() {
@@ -132,10 +141,34 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     });
 
-    socket.on('direct', (data) => {
-      if (!isGroupChat && data.fromUserId === targetId) {
-        console.log('Received direct message', data);
-        displayMessage(data.text, data.fromUserId === username, data.fromUserId, data.timestamp);
+    socket.on('direct', async (data) => {
+      console.log('Received direct message', data);
+      const senderId = data.fromUserId;
+
+      try {
+        const response = await fetch(`/findUser?UserId=${encodeURIComponent(senderId)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.status === 200) {
+          const sender = await response.json();
+          const senderUsername = sender.username;
+
+          if (senderId !== username) {
+            addChatToUI(senderUsername, senderId);
+          }
+
+          if (!isGroupChat && senderId === targetId) {
+            displayMessage(data.text, data.fromUserId === username, data.fromUserId, data.timestamp);
+          }
+        } else {
+          console.error("Kein Benutzer gefunden");
+        }
+      } catch (error) {
+        console.error("Fehler bei der Anfrage:", error);
       }
     });
 
@@ -144,6 +177,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.log('Received group message', data);
         displayMessage(data.text, data.fromUserId === username, data.fromUserId, data.timestamp);
       }
+    });
+
+    socket.on('create-chat', (data) => {
+      console.log(`Erstelle Chat für User ${data.userId} mit Chatname ${data.chatName}`);
+      addChatToUI(data.chatName, data.userId);
     });
   }
 
@@ -157,6 +195,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         sendGroupMessage(socket, targetId, input.value);
       } else {
         sendMessage(socket, targetId, input.value);
+        createChatIfNotExists(targetId, username, input.value, timestamp);
       }
       displayMessage(input.value, true, username, timestamp);
       input.value = '';
@@ -235,5 +274,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     //       displayMessage(msg.text, msg.fromUserId === username, msg.fromUserId, msg.timestamp);
     //     });
     //   });
+  }
+
+  function createChatIfNotExists(targetId, fromUserId, message, timestamp) {
+    // Überprüfen, ob der Empfänger online ist
+    const targetSocket = socket.connected && socket.connected[targetId];
+    if (targetSocket) {
+      console.log('Empfänger ist online, Nachricht wird gesendet.');
+      // Nachricht senden und Chat erstellen
+      targetSocket.emit('direct', {
+        fromUserId: fromUserId,
+        text: message,
+        timestamp: timestamp
+      });
+      targetSocket.emit('create-chat', {
+        chatName: fromUserId,
+        userId: targetId
+      });
+    } else {
+      console.log('Empfänger ist offline, Nachricht und Chat werden in der DB gespeichert.');
+      // Markiert für DB-Anbindung: Chat und Nachricht in der DB speichern
+      // Beispiel-Platzhalter:
+      // fetch('/saveChat', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({
+      //     fromUserId,
+      //     toUserId: targetId,
+      //     message,
+      //     timestamp
+      //   })
+      // });
+    }
   }
 });

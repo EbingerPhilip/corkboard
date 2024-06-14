@@ -61,20 +61,61 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('direct', (data) => {
+  socket.on('direct', async (data) => {
     if (typeof data === 'object' && data.toUserId && data.text) {
-      const targetSocket = clients[data.toUserId];
-      if (targetSocket) {
-        targetSocket.emit('direct', {
-          fromUserId: socket.userId,
-          text: data.text,
-          timestamp: data.timestamp || new Date().toISOString()
-        });
+      try {
+        const targetSocket = clients[data.toUserId];
+
+        // Benutzername des Absenders abrufen
+        const senderResponse = await axios.get(`http://localhost:3000/findUser?UserId=${socket.userId}`);
+        const senderUsername = senderResponse.data.username;
+
+        // Benutzername des Empfängers abrufen
+        const receiverResponse = await axios.get(`http://localhost:3000/findUser?UserId=${data.toUserId}`);
+        const receiverUsername = receiverResponse.data.username;
+
+        if (targetSocket) {
+          targetSocket.emit('direct', {
+            fromUserId: socket.userId,
+            text: data.text,
+            timestamp: data.timestamp || new Date().toISOString()
+          });
+          io.to(targetSocket.id).emit('create-chat', {
+            chatName: senderUsername,
+            userId: socket.userId
+          });
+        } else {
+          console.log('Empfänger ist offline, Nachricht und Chat werden in der DB gespeichert.');
+          // Markiert für DB-Anbindung: Chat und Nachricht in der DB speichern
+          // Beispiel-Platzhalter:
+          // saveChatToDatabase(socket.userId, data.toUserId, data.text, data.timestamp);
+        }
+      } catch (error) {
+        console.error('Fehler beim Abrufen des Benutzernamens:', error);
       }
     } else {
       console.warn('Received invalid data format for direct event:', data);
     }
   });
+
+  socket.on('create-chat', (data) => {
+    if (typeof data === 'object' && data.chatName && data.userId) {
+      const targetSocket = clients[data.userId];
+      if (targetSocket) {
+        console.log(`Erstelle Chat für User ${data.userId} mit Chatname ${data.chatName}`);
+        targetSocket.emit('create-chat', {
+          chatName: data.chatName,
+          userId: data.userId
+        });
+      } else {
+        console.log('Empfänger ist offline, Chat wird in der DB gespeichert.');
+        // Markiert für DB-Anbindung: Chat in der DB speichern
+      }
+    } else {
+      console.warn('Received invalid data format for create-chat event:', data);
+    }
+  });
+
 
   socket.on('disconnect', () => {
     if (socket.userId) {
