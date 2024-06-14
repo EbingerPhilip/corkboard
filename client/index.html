@@ -21,6 +21,7 @@
       flex-direction: column;
       justify-content: flex-end;
       padding: 10px;
+      margin-bottom: 10px;
     }
 
     .message-bubble {
@@ -63,6 +64,29 @@
       right: 10px;
       margin-top: 0;
     }
+
+    .error-message {
+      color: red;
+      font-size: 0.8em;
+      display: none;
+    }
+
+    .chat-link {
+      padding: 10px;
+      margin-bottom: 5px;
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      color: cadetblue;
+      font-weight: bold;
+      border: 1px solid #dbdbdb;
+      border-radius: 5px;
+      font-size: 1.2em; /* Größere Schriftgröße */
+    }
+
+    .chat-link:hover {
+      background-color: #f5f5f5;
+    }
   </style>
 </head>
 <body>
@@ -78,14 +102,21 @@
       <p class="menu-label is-size-4 ml-5">
         Chats
       </p>
-      <ul class="menu-list">
-        <li><a class="my-1.5 py-4" href="#" data-user-id="1">Chat 1</a></li>
-        <li><a class="my-1.5 py-4" href="#" data-user-id="2">Chat 2</a></li>
-        <li><a class="my-1.5 py-4" href="#" data-user-id="3">Chat 3</a></li>
-        <li><a class="my-1.5 py-4" href="#" data-user-id="4">Chat 4</a></li>
-        <li><a class="my-1.5 py-4" href="#" data-group-id="1">Group 1</a></li>
+      <ul class="menu-list" id="chat-list">
+        <!-- Hier werden die neuen Chats hinzugefügt -->
       </ul>
       <div class="mt-auto">
+        <div class="field has-addons">
+          <div class="control is-expanded">
+            <input id="UserToAdd" class="input is-rounded" type="text" placeholder="Add Chat" />
+          </div>
+          <div class="control">
+            <button id="addUserButton" type="button" class="button is-link is-rounded">Add</button>
+          </div>
+        </div>
+        <p id="error-message" class="error-message">User nicht gefunden</p>
+      </div>
+      <div class="mt-4">
         <div class="field has-addons">
           <div class="control is-expanded">
             <input class="input is-rounded" type="text" placeholder="Search User" />
@@ -101,7 +132,7 @@
     <div class="section is-flex is-flex-direction-column" style="height: 100%;">
       <div class="container">
         <header>
-          <h1 class="title" id="chat-title">Chat 1</h1>
+          <h1 class="title" id="chat-title">Chat</h1>
         </header>
         <div id="messages"></div>
       </div>

@@ -6,6 +6,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const usernameLink = document.getElementById('username-link');
   const emojiButton = document.getElementById('emoji-button');
   const emojiList = document.getElementById('emoji-list');
+  const addUserButton = document.getElementById("addUserButton");
+  const userToAddInput = document.getElementById("UserToAdd");
+  const chatList = document.getElementById("chat-list");
+  const errorMessage = document.getElementById("error-message");
 
   let socket;
   let targetId;
@@ -17,7 +21,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     return prompt("Enter your user ID:");
   }
 
-  username = promptForUserId() || "Anonymous";
+  //hier dann mit login verknüpfen
+  do {
+    username = promptForUserId();
+  } while (username.trim() === "");
 
   // Set the username in the profile section
   usernameLink.textContent = `User ${username}`;
@@ -26,7 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const response = await fetch(`/emoji`);
       emojis = await response.json();
-      console.log(emojis); // Überprüfen Sie die Emojis im Browser-Log
+      console.log(emojis);
       displayEmojis();
     } catch (error) {
       console.error('Error fetching emojis:', error);
@@ -38,8 +45,74 @@ document.addEventListener("DOMContentLoaded", async () => {
   function displayEmojis() {
     emojis.forEach(emoji => {
       const option = document.createElement('option');
-      option.value = emoji.character; // Stellen Sie sicher, dass die API ein Feld 'character' enthält
+      option.value = emoji.character;
       emojiList.appendChild(option);
+    });
+  }
+
+  addUserButton.addEventListener("click", async () => {
+    const userIdToAdd = userToAddInput.value.trim();
+    console.log("user to add:", userIdToAdd);
+    errorMessage.style.display = "none"; // Fehlermeldung immer ausblenden beim Klicken
+
+    if (userIdToAdd) {
+      if (userIdToAdd === username) {
+        console.error("You cannot add your own ID");
+        errorMessage.textContent = "You cannot add your own ID";
+        errorMessage.style.display = "block";
+        return;
+      }
+
+      try {
+        const response = await fetch(`/findUser?UserId=${encodeURIComponent(userIdToAdd)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.status === 200) {
+          const user = await response.json();
+          console.log("User JSON response:", user);
+          const chatUsername = user.username;
+          console.log("Gefundener Benutzername:", chatUsername);
+
+          // Hier den Code ausführen, wenn der Benutzer gefunden wurde
+
+          addChatToUI(chatUsername, userIdToAdd);
+          userToAddInput.value = "";
+          errorMessage.style.display = "none";
+        } else {
+          console.error("Kein Benutzer gefunden");
+          errorMessage.textContent = "User not found";
+          errorMessage.style.display = "block";
+        }
+      } catch (error) {
+        console.error("Fehler bei der Anfrage:", error);
+        errorMessage.textContent = "Error during request";
+        errorMessage.style.display = "block";
+      }
+    } else {
+      errorMessage.style.display = "none"; // Fehlermeldung ausblenden, wenn das Feld leer ist
+    }
+  });
+
+  function addChatToUI(username, userId) {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.className = "chat-link";
+    a.href = "#";
+    a.textContent = username;
+    a.dataset.userId = userId;
+    li.appendChild(a);
+    chatList.appendChild(li);
+
+    a.addEventListener("click", (event) => {
+      event.preventDefault();
+      chatTitle.textContent = username;
+      targetId = userId;
+      isGroupChat = false;
+      loadChatMessages(targetId, isGroupChat);
     });
   }
 
@@ -75,7 +148,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         displayMessage(data.text, data.fromUserId === username, data.fromUserId, data.timestamp);
       }
     });
-
   }
 
   connectSocket();

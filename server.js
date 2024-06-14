@@ -101,6 +101,21 @@ app.get('/User', async (req, res) => {
   }
 });
 
+app.get('/findUser', async function (req, res){
+  const userId = req.query.UserId;
+  const user = await User.findByUserID(userId);
+  // const {userId} = req.body;
+  // const user = await User.findByUserID(userId);
+
+  console.log("User: " + user)
+
+  if (!user) {
+    res.status(400).send("no user found")
+  }else{
+    res.status(200).json(user)
+  }
+})
+
 app.post('/newUser', async function (req, res) {
   try {
     const { username, password } = req.body;

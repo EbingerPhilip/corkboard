@@ -123,6 +123,27 @@ class User {
         await db.execute(sql);
         console.log(this.findByUsername(UserID));
     }
+
+    static async findByUserID(userID) {
+        let sql = `SELECT * FROM users WHERE id = '${userID}'`;
+        const [users, _] = await db.execute(sql);
+        console.log(sql)
+        if (users.length === 0) {
+            console.log("not fund")
+            return null;
+        }
+        const userData = users[0];
+        console.log("UserData " + userData)
+
+        const user = new User(userData.username, userData.password);
+        user.id = userData.id;
+        user.username = userData.username;
+        delete user.password;
+        delete user.Chats;
+
+
+        return user
+    }
 }
 
 module.exports = User;
