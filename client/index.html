@@ -19,8 +19,9 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
+      justify-content: flex-start;
       padding: 10px;
+      height: calc(100vh - 160px); /* Adjust the height to ensure the form fits */
     }
 
     .message-bubble {
@@ -31,6 +32,8 @@
       max-width: 60%;
       color: white;
       position: relative;
+      word-wrap: break-word; /* Ensure long words break correctly */
+      white-space: pre-wrap; /* Preserve whitespace and ensure line breaks */
     }
 
     .message-bubble.you {
@@ -81,7 +84,7 @@
           <img class="is-rounded" src="images/img.png" alt="Profilbild">
         </figure>
         <div>
-          <a href="/profile.html?userId=${userID}" id="username-link" class="username is-size-3 has-text-info" style="margin-bottom: 10px;">Username</a>
+          <a href="/profile.html?userId=${userId}" id="username-link" class="username is-size-3 has-text-info" style="margin-bottom: 10px;">Username</a>
           <p id="user-id-display" class="is-size-6 has-text-grey"></p>
         </div>
       </div>
@@ -119,7 +122,7 @@
   </div>
   <div class="column is-9">
     <div class="section is-flex is-flex-direction-column" style="height: 100%;">
-      <div class="container">
+      <div class="container" style="height: 100%;">
         <header>
           <h1 class="title" id="chat-title">Chat</h1>
         </header>
@@ -140,5 +143,20 @@
     </div>
   </div>
 </div>
+<script>
+  const messages = document.getElementById('messages');
+
+  // Ensure the latest messages are visible
+  function scrollToBottom() {
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  // Call scrollToBottom when a new message is added
+  const observer = new MutationObserver(scrollToBottom);
+  observer.observe(messages, { childList: true });
+
+  // Initial scroll to the bottom when the page loads
+  scrollToBottom();
+</script>
 </body>
 </html>
