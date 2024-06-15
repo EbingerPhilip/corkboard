@@ -64,7 +64,11 @@ class User {
         await db.execute(sql, [this.email, this.name, this.phone, this.username]);
     }
 
-
+    static async checkForUsername(username){
+        let sql = `SELECT * FROM users WHERE username = '${username}'`;
+        const [users, _] = await db.execute(sql);
+        return users.length > 0;
+    }
 
 
     static async findByUsername(username) {
