@@ -15,18 +15,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   let socket;
   let targetId;
   let isGroupChat = false;
+  let username;
   let emojis = [];
 
   const params = new URLSearchParams(window.location.search);
   const userId = params.get('userId');
   console.log(userId);
 
-
+  if (!userId) {
+    window.location.href = '/login.html';
+    return;
+  }
 
   emojiButton.textContent = '😊';
   emojiButton.classList.add('button', 'is-rounded', 'is-small');
   form.appendChild(emojiButton);
 
+  // Benutzerinformationen abrufen und anzeigen
   try {
     const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`, {
       method: 'GET',
@@ -37,13 +42,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (response.status === 200) {
       const user = await response.json();
-      const username = user.username;
+      username = user.username;
 
       console.log(username);
 
       usernameLink.textContent = username;
       userIdDisplay.textContent = `ID: ${userId}`;
-      usernameLink.href = `/profile.html?userId=${userId}`
+      usernameLink.href = `/profile.html?userId=${userId}`;
     } else {
       console.error("Kein Benutzer gefunden");
     }
@@ -71,7 +76,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       emojiList.appendChild(option);
     });
   }
-
 
   addUserButton.addEventListener("click", async () => {
     const userIdToAdd = userToAddInput.value.trim();
@@ -116,6 +120,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           addChatToUI(chatUsername, userIdToAdd);
           userToAddInput.value = "";
           errorMessage.style.display = "none";
+
+          // Chat bei beiden Benutzern erstellen
+          socket.emit('create-chat', { userIdToAdd, chatUsername });
+
         } else {
           console.error("Kein Benutzer gefunden");
           errorMessage.textContent = "User not found";
@@ -132,8 +140,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   function addChatToUI(username, userId) {
-    // Überprüfen, ob der Chat bereits existiert
-    //gibts schon oder? kann vermutlich weg
     const existingChat = Array.from(chatList.children).find(
         li => li.querySelector('a').dataset.userId === userId
     );
@@ -216,9 +222,27 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
-    socket.on('create-chat', (data) => {
+    socket.on('create-chat', async (data) => {
       console.log(`Erstelle Chat für User ${data.userId} mit Chatname ${data.chatName}`);
-      addChatToUI(data.chatName, data.userId);
+
+      try {
+        const response = await fetch(`/findUser?UserId=${encodeURIComponent(data.userId)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.status === 200) {
+          const user = await response.json();
+          const chatUsername = user.username;
+          addChatToUI(chatUsername, data.userId);
+        } else {
+          console.error("Kein Benutzer gefunden");
+        }
+      } catch (error) {
+        console.error("Fehler bei der Anfrage:", error);
+      }
     });
   }
 
@@ -244,7 +268,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({message: messageText})
+            body: JSON.stringify({ message: messageText })
           });
 
           const result = await response.json();
@@ -279,6 +303,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       timestamp: timestamp
     });
   }
+
   function sendGroupMessage(socket, groupId, message) {
     const timestamp = new Date().toISOString();
     socket.emit('group', {
@@ -309,7 +334,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       return "Unknown";
     }
   }
-
 
   async function displayMessage(message, isOwnMessage, senderUsername, timestamp) {
     const item = document.createElement('div');
@@ -357,36 +381,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function createChatIfNotExists(targetId, fromUserId, message, timestamp) {
-    // Überprüfen, ob der Empfänger online ist
-    const targetSocket = socket.connected && socket.connected[targetId];
-    if (targetSocket) {
-      console.log('Empfänger ist online, Nachricht wird gesendet.');
-      // Nachricht senden und Chat erstellen
-      targetSocket.emit('direct', {
-        fromUserId: fromUserId,
-        text: message,
-        timestamp: timestamp
-      });
-      targetSocket.emit('create-chat', {
-        chatName: fromUserId,
-        userId: targetId
-      });
-    } else {
-      console.log('Empfänger ist offline, Nachricht und Chat werden in der DB gespeichert.');
-      // Markiert für DB-Anbindung: Chat und Nachricht in der DB speichern
-      // Beispiel-Platzhalter:
-      // fetch('/saveChat', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({
-      //     fromUserId,
-      //     toUserId: targetId,
-      //     message,
-      //     timestamp
-      //   })
-      // });
-    }
+    // Placeholder for creating a chat in the future
+    console.log(`Creating chat between ${fromUserId} and ${targetId} with message: ${message}`);
   }
 });
