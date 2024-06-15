@@ -15,38 +15,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   let socket;
   let targetId;
   let isGroupChat = false;
-  let username;
-  let userId;
   let emojis = [];
-  let userID;
+
+  const params = new URLSearchParams(window.location.search);
+  const userId = params.get('userId');
+  console.log(userId);
+
+
 
   emojiButton.textContent = '😊';
   emojiButton.classList.add('button', 'is-rounded', 'is-small');
   form.appendChild(emojiButton);
 
-/*
-  function promptForUserId() {
-    return prompt("Enter your user ID:");
-  }
-
-  const params = new URLSearchParams(window.location.search);
-  userId = params.get('userId');
-
-  //Hier dann mit Login verknüpfen
- do {
-    userId = promptForUserId();
-  } while (userId.trim() === "");
-  window.location.href = `/index.html?userId=${userId}`;
-*/
-
-  const params = new URLSearchParams(window.location.search);
-  userId = params.get('userID');
-
-
-
-  // Benutzerinformationen abrufen und anzeigen
   try {
-    const response = await fetch(`/findUser?UserId=${encodeURIComponent(userID)}`, {
+    const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -55,10 +37,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (response.status === 200) {
       const user = await response.json();
-      username = user.username;
+      const username = user.username;
+
+      console.log(username);
+
       usernameLink.textContent = username;
-      userIdDisplay.textContent = `ID: ${userID}`;
-      usernameLink.href = `/profile.html?userId=${userID}`
+      userIdDisplay.textContent = `ID: ${userId}`;
+      usernameLink.href = `/profile.html?userId=${userId}`
     } else {
       console.error("Kein Benutzer gefunden");
     }
@@ -86,6 +71,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       emojiList.appendChild(option);
     });
   }
+
 
   addUserButton.addEventListener("click", async () => {
     const userIdToAdd = userToAddInput.value.trim();
@@ -147,6 +133,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function addChatToUI(username, userId) {
     // Überprüfen, ob der Chat bereits existiert
+    //gibts schon oder? kann vermutlich weg
     const existingChat = Array.from(chatList.children).find(
         li => li.querySelector('a').dataset.userId === userId
     );
@@ -292,7 +279,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       timestamp: timestamp
     });
   }
-
   function sendGroupMessage(socket, groupId, message) {
     const timestamp = new Date().toISOString();
     socket.emit('group', {
@@ -323,6 +309,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return "Unknown";
     }
   }
+
 
   async function displayMessage(message, isOwnMessage, senderUsername, timestamp) {
     const item = document.createElement('div');
@@ -403,5 +390,3 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 });
-
-//test

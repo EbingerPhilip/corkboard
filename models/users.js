@@ -9,7 +9,6 @@ class User {
         this.email = email;
         this.phone = phone;
         this.name = name;
-
     }
 
 
@@ -91,19 +90,23 @@ class User {
     static async findByUserID(userID) {
         let sql = `SELECT * FROM users WHERE id = '${userID}'`;
         const [users, _] = await db.execute(sql);
+        console.log(sql)
         if (users.length === 0) {
             console.log("not fund")
-            return null; // User not found
+            return null;
         }
         const userData = users[0];
+        console.log("UserData " + userData)
 
         const user = new User(userData.username, userData.password);
         user.id = userData.id;
+        user.username = userData.username;
         delete user.password;
         delete user.Chats;
 
         return user
     }
+
 
 
     static async addNewChat(chatID, UserID) {

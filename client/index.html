@@ -1,45 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Corkboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap">
   <script src="/socket.io/socket.io.js"></script>
   <script type="module" src="index.js"></script>
   <style>
-    body {
-      background-color: #121212;
-      color: #e0e0e0;
-      font-family: 'Roboto', sans-serif;
-    }
-
     .column.is-3 {
-      border-right: 2px solid #333;
+      border-right: 2px solid #dbdbdb;
       height: 100vh;
-      background-color: #1f1f1f;
-      color: #e0e0e0;
-    }
-
-    .profile-section {
-      text-align: center;
-      padding: 20px;
-      border-bottom: 2px solid #333;
-    }
-
-    .profile-section img {
-      border: 3px solid #00bcd4;
-    }
-
-    .profile-section a {
-      color: #00bcd4;
-    }
-
-    .menu-label {
-      color: #00bcd4;
-      font-weight: bold;
+      color: cadetblue;
     }
 
     #messages {
@@ -47,25 +19,18 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
-      padding: 20px;
-      height: calc(100vh - 180px);
-      background-color: #121212;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      justify-content: flex-end;
+      padding: 10px;
     }
 
     .message-bubble {
-      background-color: #333;
+      background-color: #444;
       border-radius: 10px;
-      padding: 12px;
-      margin: 8px 0;
+      padding: 8px;
+      margin: 5px 0;
       max-width: 60%;
       color: white;
       position: relative;
-      word-wrap: break-word;
-      white-space: pre-wrap;
-      font-family: 'Roboto', sans-serif;
     }
 
     .message-bubble.you {
@@ -73,11 +38,11 @@
       align-self: flex-end;
       text-align: left;
       right: 5px;
+      width: 35%;
     }
 
     .message-bubble.them {
-      background-color: #444;
-      align-self: flex-start;
+      max-width: 35%;
     }
 
     .message-header {
@@ -105,69 +70,30 @@
       display: none;
       margin-bottom: 10px;
     }
-
-    #message-form {
-      margin-top: 20px;
-    }
-
-    #message-form .control.is-expanded {
-      margin-right: 10px;
-    }
-
-    #message-form .button.is-link {
-      background-color: #008b8b;
-      border-color: #008b8b;
-    }
-
-    #message-form .button.is-link:hover {
-      background-color: #006b6b;
-      border-color: #006b6b;
-    }
-
-    #emoji-button {
-      background-color: #ffeb3b;
-      border-color: #ffeb3b;
-      color: #fff;
-    }
-
-    #emoji-button:hover {
-      background-color: #fdd835;
-      border-color: #fdd835;
-    }
-
-    .button.is-link.is-rounded {
-      background-color: #008b8b;
-      border-color: #008b8b;
-    }
-
-    .button.is-link.is-rounded:hover {
-      background-color: #006b6b;
-      border-color: #006b6b;
-    }
   </style>
 </head>
-
 <body>
 <div class="columns" style="height: 100vh;">
   <div class="column is-3">
     <aside class="menu is-flex is-flex-direction-column" style="height: 100%;">
-      <div class="profile-section">
-        <figure class="image is-128x128 mt-5" style="margin: auto;">
-          <img class="is-rounded" src="images/img.png" alt="Profile Image">
+      <div class="profile-section" style="text-align: center; padding: 10px; display: flex; align-items: center;">
+        <figure class="image is-128x128 mt-5" style="margin-right: 20px;">
+          <img class="is-rounded" src="images/img.png" alt="Profilbild">
         </figure>
-        <a href="/profile.html?userId=${userId}" id="username-link" class="username is-size-3" style="margin-top: 10px; display: block;">Username</a>
-        <p id="user-id-display" class="is-size-6 has-text-grey">User ID</p>
+        <div>
+          <a href="/profile.html?userId=${userId}" id="username-link" class="username is-size-3 has-text-info" style="margin-bottom: 10px;">Username</a>
+          <p id="user-id-display" class="is-size-6 has-text-grey"></p>
+        </div>
       </div>
-      <p class="menu-label ml-4">
+      <p class="menu-label is-size-4 ml-5">
         Chats
       </p>
-      <ul class="menu-list" id="chat-list" style="overflow-y: auto; padding-bottom: 20px;">
-        <li><a class="my-1.5 py-4" href="#" data-user-id="chatgpt">Chat GPT</a></li>
-        <!-- Chats will be added here -->
+      <ul class="menu-list" id="chat-list">
+        <!-- Hier werden die neuen Chats hinzugefügt -->
       </ul>
       <div class="mt-auto">
         <div class="field">
-          <p id="error-message" class="error-message">User not found</p>
+          <p id="error-message" class="error-message">User nicht gefunden</p>
           <div class="field has-addons">
             <div class="control is-expanded">
               <input id="UserToAdd" class="input is-rounded" type="text" placeholder="Insert UserID" />
@@ -192,13 +118,13 @@
   </div>
   <div class="column is-9">
     <div class="section is-flex is-flex-direction-column" style="height: 100%;">
-      <div class="container" style="height: 100%;">
+      <div class="container">
         <header>
-          <h1 class="title has-text-white" id="chat-title">Chat</h1>
+          <h1 class="title" id="chat-title">Chat</h1>
         </header>
         <div id="messages"></div>
       </div>
-      <form id="message-form" class="field has-addons">
+      <form id="message-form" class="field has-addons" style="margin-top: auto; position: relative;">
         <div class="control is-expanded">
           <input id="input" class="input is-rounded" type="text" placeholder="Message" list="emoji-list" />
           <datalist id="emoji-list"></datalist>
@@ -213,21 +139,5 @@
     </div>
   </div>
 </div>
-<script>
-  const messages = document.getElementById('messages');
-
-  // Ensure the latest messages are visible
-  function scrollToBottom() {
-    messages.scrollTop = messages.scrollHeight;
-  }
-
-  // Call scrollToBottom when a new message is added
-  const observer = new MutationObserver(scrollToBottom);
-  observer.observe(messages, { childList: true });
-
-  // Initial scroll to the bottom when the page loads
-  scrollToBottom();
-</script>
 </body>
-
 </html>

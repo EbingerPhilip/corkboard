@@ -367,16 +367,7 @@ app.get('/emoji', async (req, res) => {
   }
 });
 
-app.get('/findUser', async function (req, res){
-  const {UserId} = req.body;
-  const user = await User.findByUserID(UserId);
 
-  if (!user) {
-    res.status(400).send("no user found")
-  }else{
-    res.status(200).json(user)
-  }
-})
 
 server.listen(3000, () => {
   console.log("Server running at http://localhost:3000/");
