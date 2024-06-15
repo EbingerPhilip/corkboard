@@ -10,19 +10,25 @@ const cookieParser = require('cookie-parser');
 const socketIo = require('socket.io');
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
+const OpenAI = require("openai");
+
 
 const User = require('./models/users');
 const Chat = require('./models/chats');
 const Message = require('./models/message');
 const {cookieJwtAuth} = require("./models/cookieJwtAuth");
 
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "client"), { index: 'login.html' }));
+app.use(express.static(path.join(__dirname, "client"),{ index : 'login.html' }));
 app.use(cookieParser());
+
+//braucht das wer? hab ich beim mergen ned gecheckt
+app.use(['/addChat', '/removeChat', '/Message','/Chat'],cookieJwtAuth);
 
 const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -124,6 +130,7 @@ io.on('connection', (socket) => {
     }
   });
 
+
   socket.on('disconnect', () => {
     if (socket.userId) {
       console.log(`User ${socket.userId} disconnected`);
@@ -132,7 +139,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// Beispiel-Endpunkt für Benutzerabfragen
 app.get('/findUser', async function (req, res) {
   const userId = req.query.UserId;
   const user = await User.findByUserID(userId); // Benutzer aus der Datenbank abrufen
@@ -150,7 +156,7 @@ app.get('/findUser', async function (req, res) {
 app.post('/User', async function (req, res) {
   try {
     const { username, password } = req.body;
-    const user = await User.findByUsername(username); // Benutzer aus der Datenbank abrufen
+    const user = await User.findByUsername(username); 
 
     if (!user || user.password !== password) {
       return res.status(403).json({ message: "Invalid credentials" });
@@ -188,70 +194,150 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+
+app.get('/findUser', async function (req, res){
+  const userId = req.query.UserId;
+  const user = await User.findByUserID(userId);
+  // const {userId} = req.body;
+  // const user = await User.findByUserID(userId);
+
+  console.log("User: " + user)
+
+  if (!user) {
+    res.status(400).send("no user found")
+  }else{
+    res.status(200).json(user)
+  }
+})
+
 app.post('/newUser', async function (req, res) {
   try {
     const { username, password } = req.body;
+
+    //console.log("cheese on server: " + username)
 
     if (!username || !password) {
       return res.status(400).send('Username and password are required');
     }
 
-    // Platzhalter für Benutzererstellung
-    res.status(201).send('User created successfully');
+    if (await User.checkForUsername(username)){
+      return res.status(409).send('Username already in Use')
+    }
+
+    const user = new User(username, password,);
+    await user.saveUser();
+    res.status(201).send('User created successfully')
+
   } catch (error) {
     console.error('Error creating user:', error);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send('Internal Server Error')
   }
 });
 
 app.put('/updateInfo', async function (req, res) {
-  try {
-    const { username, email, name, phone } = req.body;
+    try {
+        const { username, email, name, phone } = req.body;
 
-    // Platzhalter für Benutzeraktualisierung
-    res.status(201).send('Userinfo saved successfully');
-  } catch (error) {
-    console.error('Error saving user info:', error);
-    res.status(500).send('Internal Server Error');
-  }
+        const user = await User.findByUsername(username);
+        if (user) {
+            user.email = email;
+            user.name = name;
+            user.phone = phone;
+            await user.saveUserinfo();
+            res.status(201).send('Userinfo saved successfully');
+        } else {
+            res.status(400).send('User not found');
+        }
+    } catch (error) {
+        console.error('Error saving user info:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
-app.post('/addChat', async function (req, res) {
-  try {
-    // Platzhalter für Chat-Erstellung
-    res.status(201).json({ chatID: 1, message: "Chat created successfully" });
-  } catch (err) {
-    console.error('Error creating Chat:', err);
-    res.status(500).send('Internal Server Error');
+
+//creates new Chat object
+//takes two Userid returns a Chat id
+app.post('/addChat', async function (req, res){
+try {
+  const {User2} = req.body;
+  const User1 = req.user.id.valueOf()
+
+  if (!User2) {
+    return res.status(400).send('missing User');
   }
+
+  const chat = new Chat(User1,User2);
+  const chatID = await chat.saveChat();
+  res.status(201).json({chatID, message: "Chat created successfully"})
+
+}catch (err){
+  console.error('Error creating Chat:', err);
+  res.status(500).send('Internal Server Error')
+}
 });
 
-app.delete('/removeChat', async function (req, res) {
+//remove Chat from the Databank
+//takes a Chat id sends message
+app.delete('/removeChat', async function (req, res){
   try {
-    // Platzhalter für Chat-Löschung
-    res.status(201).send("Chat deleted");
-  } catch (err) {
+    const {ChatID} = req.body;
+    if (!req.user.Chats.includes(Number(ChatID))){
+      return res.status(401).send('Invalid Credentials')
+    }
+
+    const chat = await Chat.getChatfromID(ChatID);
+
+    await chat.deleteChat()
+    res.status(201).send("Chat deleted")
+  } catch (err){
     console.error('Error deleting Chat:', err);
-    res.status(400).send('Internal Server Error');
+    res.status(400).send('Internal Server Error')
   }
 });
 
-app.post('/Message', async function (req, res) {
+//save a Message
+//takes a Chat id, User id, Username and Text String
+//Username is needed to avoid needlessly searching for a name in db
+app.post('/Message', async function (req, res){
   try {
-    // Platzhalter für Nachrichtenspeicherung
-    res.status(201).send("Message received");
-  } catch (err) {
+    const {ChatID, TextMessage} = req.body;
+
+    if (!req.user.Chats.includes(Number(ChatID))){
+      return res.status(401).send('Invalid Credentials')
+    }
+
+    const message = new Message(req.user.id, req.user.username, TextMessage)
+    const tablename = `Chat${ChatID}`
+
+    const valid = Message.saveMessage(tablename, message)
+
+    if (valid){
+      res.status(201).send("Message received")
+    } else {
+      res.status(500).send('Error in Saving Message')
+    }
+
+  } catch (err){
     console.error('Error saving Message:', err);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send('Internal Server Error')
   }
 });
 
-app.get('/Chat', async function (req, res) {
+//return a Chat
+//takes a Chat id, returns a List of Message objects
+app.get('/Chat', async function (req, res){
   try {
-    // Platzhalter für Chat-Rückgabe
-    res.status(201).json({ chatHistory: [], message: "Message received" });
-  } catch (err) {
-    res.status(500).send('Internal Server Error');
+    const {ChatID} = req.body;
+    const tablename = `Chat${ChatID}`
+    const chatHistory = await Chat.getMessages(tablename);
+
+    if (chatHistory){
+      res.status(201).json({chatHistory,message : "Message received"});
+    }else{
+      res.status(500).send('Error in retrieving Messages');
+    }
+  } catch (err){
+    res.status(500).send('Internal Server Error')
   }
 });
 
@@ -262,13 +348,13 @@ app.get('/emoji', async (req, res) => {
 
     const fetchEmojis = async (category) => {
       const response = await axios.get(`https://api.api-ninjas.com/v1/emoji?name=${category}`, {
-        headers: { 'X-Api-Key': 'API_KEY_PLACEHOLDER' }
+        headers: { 'X-Api-Key': API_KEY }
       });
       return response.data;
     };
 
     // Erstellt Array von Promises, indem für jede Kategorie 'fetchEmojis' aufgerufen wird
-    // Wartet bis alle Promises abgeschlossen sind und gibt Ergebnisse als Array zurück
+    //Wartet bis alle Promises abgeschlossen sind und gibt Ergebnisse als Array zurück
     const emojiResults = await Promise.all(categories.map(fetchEmojis));
 
     // Flacht das Array von Arrays in ein einzelnes Array ab

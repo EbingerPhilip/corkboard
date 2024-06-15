@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("login-button").addEventListener("click", loginRequest);
-    document.getElementById("register-Button").addEventListener("click", registerRequest);
+    document.getElementById("sign-up-button").addEventListener("click", registerRequest);
 
 });
 
@@ -44,6 +44,8 @@ function registerRequest(event){
     const username = document.getElementById("usernameBox").value;
     const password = document.getElementById("passwordBox").value;
 
+    //console.log("cheese in client: " + username)
+
     const request = {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -52,10 +54,6 @@ function registerRequest(event){
 
     fetch('/newUser', request)
         .then(response => {
-            if (response == null) {
-
-            }
-
            switch (response.status){
                case 201:
                    loginRequest(event)

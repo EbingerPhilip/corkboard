@@ -3,7 +3,7 @@ const db = require('../config/db')
 class User {
 
     constructor(username, password, email, phone, name) {
-        this.username = name;
+        this.username = username;
         this.password = password;
         this.Chats = [];
         this.email = email;
@@ -25,6 +25,7 @@ class User {
     }
 
     async saveUser() {
+        console.log(this.username)
 
         let sql = `
         INSERT INTO users (
