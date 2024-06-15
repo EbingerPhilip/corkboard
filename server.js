@@ -195,24 +195,6 @@ app.post('/api/chat', async (req, res) => {
 });
 
 
-
-app.get('/User', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const user = await User.findByUsername(username);
-    const valid = user.checkPassword(password);
-
-    if (valid) {
-      res.status(200).json({ user, message: "Login Successful" });
-    } else {
-      res.status(400).json({ message: "Login failed" });
-    }
-  } catch (err) {
-    console.log(err);
-    res.status(500).send('Internal Server Error');
-  }
-});
-
 app.get('/findUser', async function (req, res){
   const userId = req.query.UserId;
   const user = await User.findByUserID(userId);
@@ -234,6 +216,10 @@ app.post('/newUser', async function (req, res) {
 
     if (!username || !password) {
       return res.status(400).send('Username and password are required');
+    }
+
+    if (await User.checkForUsername(username)){
+      return res.status(409).send('Username already in Use')
     }
 
     const user = new User(username, password);
