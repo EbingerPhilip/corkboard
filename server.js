@@ -348,7 +348,7 @@ app.get('/emoji', async (req, res) => {
 
     const fetchEmojis = async (category) => {
       const response = await axios.get(`https://api.api-ninjas.com/v1/emoji?name=${category}`, {
-        headers: { 'X-Api-Key': API_KEY }
+        headers: { 'X-Api-Key': process.env.API_EMOJI_KEY }
       });
       return response.data;
     };
