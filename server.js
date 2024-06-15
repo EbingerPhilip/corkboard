@@ -154,6 +154,7 @@ app.post('/User', async function (req, res) {
     const { username, password } = req.body;
     const user = await User.findByUsername(username);
 
+
     if (!user || user.password !== password) {
       return res.status(403).json({ message: "Invalid credentials" });
     }
@@ -214,6 +215,8 @@ app.post('/newUser', async function (req, res) {
   try {
     const { username, password } = req.body;
 
+    //console.log("cheese on server: " + username)
+
     if (!username || !password) {
       return res.status(400).send('Username and password are required');
     }
@@ -222,7 +225,7 @@ app.post('/newUser', async function (req, res) {
       return res.status(409).send('Username already in Use')
     }
 
-    const user = new User(username, password);
+    const user = new User(username, password,);
     await user.saveUser();
     res.status(201).send('User created successfully')
 
