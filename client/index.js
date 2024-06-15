@@ -121,8 +121,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           userToAddInput.value = "";
           errorMessage.style.display = "none";
 
-          // Chat bei beiden Benutzern erstellen
-          socket.emit('create-chat', { userIdToAdd, chatUsername });
+          // Chat nur beim Hinzufügenden Benutzer erstellen
+          // socket.emit('create-chat', { userIdToAdd, chatUsername });
 
         } else {
           console.error("Kein Benutzer gefunden");
