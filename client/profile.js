@@ -12,8 +12,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function loadUserProfile(userId) {
         try {
+            console.log('Lade Benutzerprofil für:', userId);
             const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`);
             const user = await response.json();
+            console.log('Erhaltene Benutzerdaten:', user);
 
             document.getElementById('profile-username').textContent = user.username;
             emailElement.textContent = user.email;
@@ -36,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     saveButton.addEventListener('click', async () => {
         await saveUserinfo();
         toggleEdit(false);
+        loadUserProfile(userId);
     });
 
     uploadButton.addEventListener('click', () => {

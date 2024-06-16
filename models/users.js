@@ -99,7 +99,7 @@ class User {
         const userData = users[0];
         console.log("UserData " + JSON.stringify(userData));
 
-        const user = new User(userData.username, userData.password);
+        const user = new User(userData.username, userData.password, userData.email, userData.phone, userData.legalname);
         user.id = userData.id;
         user.username = userData.username;
         delete user.password;
