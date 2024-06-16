@@ -13,6 +13,7 @@ const YAML = require("yamljs");
 const OpenAI = require("openai");
 
 
+
 const User = require('./models/users');
 const Chat = require('./models/chats');
 const Message = require('./models/message');
@@ -34,6 +35,9 @@ const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const secreteKey = "BigDog";
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 let clients = {};
 const groups = {
@@ -177,9 +181,13 @@ app.post('/User', async function (req, res) {
 app.post('/api/chat', async (req, res) => {
   try {
     const { message } = req.body;
-    const response = {
-      choices: [{ message: { content: "This is a placeholder response from ChatGPT." } }]
-    }; // Platzhalterantwort
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: message }],
+      max_tokens: 2048,
+      temperature: 1,
+    });
 
     console.log('OpenAI response:', response);
 
