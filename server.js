@@ -209,7 +209,7 @@ app.get('/findUser', async function (req, res){
   // const {userId} = req.body;
   // const user = await User.findByUserID(userId);
 
-  console.log("User: " + user)
+  console.log("User: " + JSON.stringify(user));
 
   if (!user) {
     res.status(400).send("no user found")
@@ -243,23 +243,28 @@ app.post('/newUser', async function (req, res) {
 });
 
 app.put('/updateInfo', async function (req, res) {
-    try {
-        const { username, email, name, phone } = req.body;
+  try {
+    const { userId, email, legalname, phone } = req.body;
 
-        const user = await User.findByUsername(username);
-        if (user) {
-            user.email = email;
-            user.name = name;
-            user.phone = phone;
-            await user.saveUserinfo();
-            res.status(201).send('Userinfo saved successfully');
-        } else {
-            res.status(400).send('User not found');
-        }
-    } catch (error) {
-        console.error('Error saving user info:', error);
-        res.status(500).send('Internal Server Error');
+    console.log(`Received update request for user: ${userId}`);
+    console.log('New details:', { email, legalname, phone });
+
+    const user = await User.findByUserID(userId);
+    if (user) {
+      user.email = email || null;
+      user.legalname = legalname || null;
+      user.phone = phone || null;
+      console.log('Saving user info for:', userId);
+      console.log('Updated details:', { email: user.email, legalname: user.legalname, phone: user.phone });
+      await user.saveUserinfo();
+      res.status(201).send('Userinfo saved successfully');
+    } else {
+      res.status(400).send('User not found');
     }
+  } catch (error) {
+    console.error('Error saving user info:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 

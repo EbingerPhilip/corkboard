@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const uploadButton = document.getElementById('upload-button');
     const backButton = document.getElementById('back-button');
 
-
     async function loadUserProfile(userId) {
         try {
             const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`);
@@ -18,8 +17,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             document.getElementById('profile-username').textContent = user.username;
             emailElement.textContent = user.email;
-            nameElement.textContent = user.name;
-            phoneElement.textContent = user.phone;
+            nameElement.textContent = user.legalname;
+            phoneElement.textContent = user.phone ;
         } catch (error) {
             console.error('Error loading user profile:', error);
         }
@@ -30,7 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const editButton = document.getElementById('edit-button');
     const saveButton = document.getElementById('save-button');
 
-
     editButton.addEventListener('click', () => {
         toggleEdit(true);
     });
@@ -39,7 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
         await saveUserinfo();
         toggleEdit(false);
     });
-
 
     uploadButton.addEventListener('click', () => {
         fileInput.click();
@@ -67,43 +64,41 @@ document.addEventListener("DOMContentLoaded", () => {
             phoneElement.innerHTML = `<input id="input-phone" class="input" type="tel" value="${phoneElement.textContent}">`;
             editButton.style.display = 'none';
             saveButton.style.display = 'inline-block';
-            console.log('edit');
         } else {
             emailElement.textContent = document.getElementById('input-email').value;
             nameElement.textContent = document.getElementById('input-name').value;
             phoneElement.textContent = document.getElementById('input-phone').value;
             editButton.style.display = 'inline-block';
             saveButton.style.display = 'none';
-            console.log('no edit');
         }
     }
 
-//sendet updateUserInfo zum Server
     async function saveUserinfo() {
-        //bekommen upgedatede infos
         const updatedEmail = document.getElementById('input-email').value;
         const updatedName = document.getElementById('input-name').value;
         const updatedPhone = document.getElementById('input-phone').value;
 
-            //sends PUT req to updateInfo
-            const response = await fetch('/updateInfo', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    username: username,
-                    email: updatedEmail,
-                    name: updatedName,
-                    phone: updatedPhone
-                })
-            });
+        const updatedUserinfo = {
+            userId,
+            email: updatedEmail,
+            legalname: updatedName,
+            phone: updatedPhone || null // Set phone to null if it is empty
+        };
 
-            if (response.ok) {
-                console.log('Userinfo saved successfully');
-            } else {
-                console.error('Failed to save userinfo');
-            }
+        console.log('Sending updated info:', updatedUserinfo);
+
+        const response = await fetch('/updateInfo', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedUserinfo)
+        });
+
+        if (response.ok) {
+            console.log('Userinfo saved successfully');
+        } else {
+            console.error('Failed to save userinfo');
+        }
     }
 });
-
