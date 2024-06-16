@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
             emailElement.textContent = user.email;
             nameElement.textContent = user.legalname;
             phoneElement.textContent = user.phone ;
+            profilePicture.src = user.profilePicture;
         } catch (error) {
             console.error('Error loading user profile:', error);
         }
@@ -45,17 +46,22 @@ document.addEventListener("DOMContentLoaded", () => {
         fileInput.click();
     });
 
-    fileInput.addEventListener('change', (event) => {
+    fileInput.addEventListener('change', async (event) => {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = (e) => {
-                profilePicture.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+            const formData = new FormData();
+            formData.append('profilePicture', file);
+
+            const response = await fetch(`/uploadProfilePicture?userId=${userId}`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            profilePicture.src = data.imageUrl;
         }
     });
-
     backButton.addEventListener('click', () => {
         window.location.href = `/index.html?userId=${userId}`;
     });
@@ -85,7 +91,8 @@ document.addEventListener("DOMContentLoaded", () => {
             userId,
             email: updatedEmail,
             legalname: updatedName,
-            phone: updatedPhone || null // Set phone to null if it is empty
+            phone: updatedPhone,
+
         };
 
         console.log('Sending updated info:', updatedUserinfo);

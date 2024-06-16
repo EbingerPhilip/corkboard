@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,33 +14,31 @@
       color: #e0e0e0;
       font-family: 'Roboto', sans-serif;
     }
-
     .column.is-3 {
       border-right: 2px solid #444;
       height: 100vh;
       background-color: #2c2c2c;
       color: #e0e0e0;
     }
-
     .profile-section {
       text-align: center;
       padding: 20px;
       border-bottom: 2px solid #444;
     }
-
     .profile-section img {
       border: 3px solid #00d1b2;
+      width: 100px; /* Adjust as needed */
+      height: 100px; /* Adjust as needed */
+      object-fit: cover;
+      border-radius: 50%;
     }
-
     .profile-section a {
       color: #00d1b2;
     }
-
     .menu-label {
       color: #00d1b2;
       font-weight: bold;
     }
-
     #messages {
       flex-grow: 1;
       overflow-y: auto;
@@ -54,7 +51,6 @@
       border-radius: 10px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     }
-
     .message-bubble {
       background-color: #444;
       border-radius: 10px;
@@ -67,19 +63,16 @@
       white-space: pre-wrap;
       font-family: 'Roboto', sans-serif;
     }
-
     .message-bubble.you {
       background-color: #3273dc;
       align-self: flex-end;
       text-align: left;
       right: 5px;
     }
-
     .message-bubble.them {
       background-color: #00d1b2;
       align-self: flex-start;
     }
-
     .message-header {
       font-size: 0.8em;
       color: white;
@@ -88,11 +81,9 @@
       border-radius: 10px 10px 0 0;
       padding: 5px;
     }
-
     .message-text {
       font-size: 1em;
     }
-
     .message-timestamp {
       font-size: 0.6em;
       color: lightgray;
@@ -101,53 +92,43 @@
       right: 10px;
       margin-top: 0;
     }
-
     .error-message {
       color: red;
       font-size: 0.8em;
       display: none;
       margin-bottom: 10px;
     }
-
     #message-form {
       margin-top: 20px;
     }
-
     #message-form .control.is-expanded {
       margin-right: 10px;
     }
-
     #message-form .button.is-link {
       background-color: #00d1b2;
       border-color: #00d1b2;
     }
-
     #message-form .button.is-link:hover {
       background-color: #00c4a7;
       border-color: #00c4a7;
     }
-
     #emoji-button {
       background-color: #ffdd57;
       border-color: #ffdd57;
       color: #fff;
     }
-
     #emoji-button:hover {
       background-color: #ffcc00;
       border-color: #ffcc00;
     }
   </style>
 </head>
-
 <body>
 <div class="columns" style="height: 100vh;">
   <div class="column is-3">
     <aside class="menu is-flex is-flex-direction-column" style="height: 100%;">
       <div class="profile-section">
-        <figure class="image is-128x128 mt-5" style="margin: auto;">
-          <img class="is-rounded" src="images/img.png" alt="Profile Image">
-        </figure>
+        <img id="profile-picture" src="images/default-profile.png" alt="Profile Picture">
         <a href="/profile.html?userId=${userId}" id="username-link" class="username is-size-3" style="margin-top: 10px; display: block;">Username</a>
         <p id="user-id-display" class="is-size-6 has-text-grey">User ID</p>
       </div>
@@ -207,5 +188,4 @@
   </div>
 </div>
 </body>
-
 </html>

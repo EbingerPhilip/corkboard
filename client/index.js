@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const chatList = document.getElementById("chat-list");
   const errorMessage = document.getElementById("error-message");
   const messages = document.getElementById('messages');
+  const profilePicture = document.getElementById('profile-picture');
 
   let socket;
   let targetId;
@@ -51,6 +52,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       usernameLink.textContent = username;
       userIdDisplay.textContent = `ID: ${userId}`;
       usernameLink.href = `/profile.html?userId=${userId}`;
+      profilePicture.src = user.profilePicture;
     } else {
       console.error("Kein Benutzer gefunden");
     }
