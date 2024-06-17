@@ -310,6 +310,10 @@ app.post('/Message', async function (req, res){
 app.get('/Chat', async function (req, res){
   try {
     const {ChatID} = req.body;
+
+    if (!req.user.Chats.includes(Number(ChatID))){
+      return res.status(401).send('Invalid Credentials')
+    }
     const tablename = `Chat${ChatID}`
     const chatHistory = await Chat.getMessages(tablename);
 

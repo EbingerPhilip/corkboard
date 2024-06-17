@@ -106,7 +106,6 @@ class Chat {
                 for (let i = 0; i < chatString.length; i++){
                     const row = chatString[i]
                     const message = row.Data;
-                    console.log(message)
 
                     chat.push(JSON.parse(message))
                 }

@@ -1,6 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("login-button").addEventListener("click", loginRequest);
-    document.getElementById("sign-up-button").addEventListener("click", registerRequest);
+    document.getElementById("login-button").addEventListener("click", function (event){
+        if ( switchButton("login")) return
+        loginRequest(event)
+    });
+    document.getElementById("sign-up-button").addEventListener("click", function (event){
+        if ( switchButton("register")) return
+        registerRequest(event)
+    });
 
 });
 
@@ -75,4 +81,27 @@ function MessageWindow(Message){
     const loginError = document.getElementById("login-error");
     loginError.classList.remove("is-hidden");
     loginError.textContent = Message ;
+}
+
+let state = "login";
+
+function switchButton(button){
+    const loginButton = document.getElementById("login-button");
+    const registerButton = document.getElementById("login-button");
+
+    if (button === "login"){
+        loginButton.style.backgroundColor = "white";
+        registerButton.style.backgroundColor = "blue";
+    }else{
+        loginButton.style.backgroundColor = "blue";
+        registerButton.style.backgroundColor = "white";
+    }
+
+    if (button !== state){
+        state = button;
+        return true;
+    }
+
+
+    return false;
 }
