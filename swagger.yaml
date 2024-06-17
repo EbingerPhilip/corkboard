@@ -1,27 +1,24 @@
 openapi: 3.0.3
 info:
-  title: Corkboard
-  description: API für die Verwaltung von Chats und Nachrichten
+  title: Corkboard API
+  description: API für die Verwaltung von Chats, Nachrichten sowie die dazugehörigen User.
   version: 1.0.0
 servers:
   - url: http://localhost:3000
-    description: Development Server
+    description: Test Server
 tags:
   - name: user
-    description: Operationen rund um Benutzer
+    description: Verwaltung von User
   - name: chat
-    description: Operationen rund um Chats
-  - name: message
-    description: Operationen rund um Nachrichten
-  - name: emoji
-    description: Operationen rund um Emojis
+    description: Verwaltung von Chats und Nachrichten
 paths:
-  /User:
-    get:
+  /user:
+    post:
       tags:
         - user
-      summary: Benutzer einloggen
-      operationId: loginUser
+      summary: User einloggen
+      description: User werden über die Datenbank eingeloggt.
+      operationId: Userlogin
       requestBody:
         required: true
         content:
@@ -34,24 +31,34 @@ paths:
                 password:
                   type: string
       responses:
-        '200':
-          description: Erfolgreicher Login
+        '201':
+          description: Benutzer erfolgreich eingeloggt
           content:
-            application/json:
+            text/plain:
               schema:
-                type: object
-                properties:
-                  user:
-                    $ref: '#/components/schemas/User'
-                  message:
-                    type: string
-        '400':
-          description: Login fehlgeschlagen
+                type: string
+                example: "Benutzer erfolgreich eingeloggt"
+        '403':
+          description: Benutzername oder Passwort falsch
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Benutzername oder Passwort falsch"
+        '500':
+          description: Interner Serverfehler
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Interner Serverfehler"
+  /newUser:
     post:
       tags:
         - user
       summary: Neuen Benutzer erstellen
-      operationId: createUser
+      description: Erstellt einen neuen Benutzer in der Datenbank.
+      operationId: newUser
       requestBody:
         required: true
         content:
@@ -66,15 +73,124 @@ paths:
       responses:
         '201':
           description: Benutzer erfolgreich erstellt
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Benutzer erfolgreich erstellt"
         '400':
           description: Benutzername und Passwort erforderlich
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Benutzername und Passwort erforderlich"
+        '409':
+          description: Benutzername bereits in Verwendung
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Benutzername bereits in Verwendung"
         '500':
           description: Interner Serverfehler
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Interner Serverfehler"
+  /updateInfo:
+    put:
+      tags:
+        - user
+      summary: Benutzerinformationen aktualisieren
+      description: Aktualisiert die Informationen eines bestehenden Benutzers wie E-Mail, Name und Telefonnummer.
+      operationId: updateInfo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                name:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        '201':
+          description: Benutzerinformationen erfolgreich aktualisiert
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Benutzerinformationen erfolgreich aktualisiert"
+        '400':
+          description: Benutzer nicht gefunden
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Benutzer nicht gefunden"
+        '500':
+          description: Interner Serverfehler
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Interner Serverfehler"
+  /findUser:
+    get:
+      tags:
+        - user
+      summary: Benutzer über UserID suchen
+      description: Sucht einen Benutzer in der Datenbank anhand der Benutzer-ID und liefert UserID und Benutzername.
+      operationId: findUser
+      parameters:
+        - name: UserId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Erfolgreiche Abfrage
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userID:
+                    type: string
+                  username:
+                    type: string
+              examples:
+                example:
+                  value:
+                    userID: "123"
+                    username: "john_doe"
+        '400':
+          description: Benutzer nicht gefunden
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Benutzer nicht gefunden"
+        '500':
+          description: Interner Serverfehler
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Interner Serverfehler"
   /addChat:
     post:
       tags:
         - chat
       summary: Neuen Chat erstellen
+      description: Erstellt einen neuen Chat zwischen zwei Benutzern.
       operationId: createChat
       requestBody:
         required: true
@@ -97,17 +213,30 @@ paths:
                 properties:
                   chatID:
                     type: integer
+                    example: 123
                   message:
                     type: string
+                    example: "Chat erfolgreich erstellt"
         '400':
           description: Benutzer fehlt
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Benutzer fehlt"
         '500':
           description: Interner Serverfehler
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Interner Serverfehler"
   /removeChat:
     delete:
       tags:
         - chat
       summary: Chat löschen
+      description: Löscht einen bestehenden Chat anhand der Chat-ID aus der Datenbank inklusive allen Nachrichten.
       operationId: deleteChat
       requestBody:
         required: true
@@ -121,13 +250,24 @@ paths:
       responses:
         '201':
           description: Chat erfolgreich gelöscht
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Chat erfolgreich gelöscht"
         '500':
           description: Interner Serverfehler
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Interner Serverfehler"
   /Message:
     post:
       tags:
-        - message
+        - chat
       summary: Nachricht speichern
+      description: Speichert eine Nachricht in einem bestimmten Chat.
       operationId: saveMessage
       requestBody:
         required: true
@@ -138,22 +278,33 @@ paths:
               properties:
                 ChatID:
                   type: integer
-                UserID:
+                SenderUserID:
                   type: integer
-                Username:
-                  type: string
+                ReceiverUserID:
+                  type: integer
                 TextMessage:
                   type: string
       responses:
         '201':
           description: Nachricht erfolgreich gespeichert
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Nachricht erfolgreich gespeichert"
         '500':
           description: Interner Serverfehler
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Interner Serverfehler"
   /Chat:
     get:
       tags:
         - chat
       summary: Chat abrufen
+      description: Ruft alle Nachrichten eines bestimmten Chats anhand der Chat-ID ab.
       operationId: getChat
       parameters:
         - name: ChatID
@@ -175,43 +326,39 @@ paths:
                       $ref: '#/components/schemas/Message'
                   message:
                     type: string
+                    example: "Chat abgerufen"
         '500':
           description: Interner Serverfehler
-  /emoji:
-    get:
-      tags:
-        - emoji
-      summary: Emojis abrufen
-      operationId: getEmojis
-      responses:
-        '200':
-          description: Erfolgreiche Abfrage
           content:
-            application/json:
+            text/plain:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                    char:
-                      type: string
+                type: string
+                example: "Interner Serverfehler"
 components:
   schemas:
     User:
       type: object
       properties:
+        id:
+          type: integer
         username:
           type: string
         password:
           type: string
+        email:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
     Message:
       type: object
       properties:
-        UserID:
+        ChatID:
           type: integer
-        Username:
-          type: string
+        SenderUserID:
+          type: integer
+        ReceiverUserID:
+          type: integer
         TextMessage:
           type: string
