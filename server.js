@@ -11,6 +11,7 @@ const socketIo = require('socket.io');
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
 const OpenAI = require("openai");
+const multer = require ('multer');
 
 
 const User = require('./models/users');
@@ -27,13 +28,34 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "client"),{ index : 'login.html' }));
 app.use(cookieParser());
 
+
+const secreteKey = "BigDog";
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const uploadDir = path.join(__dirname, 'uploads');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${req.query.userId}-${Date.now()}${path.extname(file.originalname)}`);
+  }
+});
+
+const upload = multer({ storage });
+
+
 //braucht das wer? hab ich beim mergen ned gecheckt
 app.use(['/addChat', '/removeChat', '/Message','/Chat'],cookieJwtAuth);
 
 const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-const secreteKey = "BigDog";
 
 let clients = {};
 const groups = {
@@ -174,26 +196,6 @@ app.post('/User', async function (req, res) {
   }
 });
 
-app.post('/api/chat', async (req, res) => {
-  try {
-    const { message } = req.body;
-    const response = {
-      choices: [{ message: { content: "This is a placeholder response from ChatGPT." } }]
-    }; // Platzhalterantwort
-
-    console.log('OpenAI response:', response);
-
-    if (response && response.choices && response.choices.length > 0) {
-      res.json({ response: response.choices[0].message.content });
-    } else {
-      throw new Error('No response choices available');
-    }
-  } catch (error) {
-    console.error('Error handling chat request:', error.message);
-    res.status(500).json({ error: 'An error occurred while processing your request.', details: error.message });
-  }
-});
-
 
 app.get('/findUser', async function (req, res){
   const userId = req.query.UserId;
@@ -201,7 +203,7 @@ app.get('/findUser', async function (req, res){
   // const {userId} = req.body;
   // const user = await User.findByUserID(userId);
 
-  console.log("User: " + user)
+  console.log("User: " + JSON.stringify(user));
 
   if (!user) {
     res.status(400).send("no user found")
@@ -232,26 +234,6 @@ app.post('/newUser', async function (req, res) {
     console.error('Error creating user:', error);
     res.status(500).send('Internal Server Error')
   }
-});
-
-app.put('/updateInfo', async function (req, res) {
-    try {
-        const { username, email, name, phone } = req.body;
-
-        const user = await User.findByUsername(username);
-        if (user) {
-            user.email = email;
-            user.name = name;
-            user.phone = phone;
-            await user.saveUserinfo();
-            res.status(201).send('Userinfo saved successfully');
-        } else {
-            res.status(400).send('User not found');
-        }
-    } catch (error) {
-        console.error('Error saving user info:', error);
-        res.status(500).send('Internal Server Error');
-    }
 });
 
 
@@ -341,6 +323,80 @@ app.get('/Chat', async function (req, res){
   }
 });
 
+
+app.put('/updateInfo', async function (req, res) {
+  try {
+    const { userId, email, legalname, phone } = req.body;
+
+    console.log(`Received update request for user: ${userId}`);
+    console.log('New details:', { email, legalname, phone });
+
+    const user = await User.findByUserID(userId);
+    if (user) {
+      user.email = email || null;
+      user.legalname = legalname || null;
+      user.phone = phone || null;
+      console.log('Saving user info for:', userId);
+      console.log('Updated details:', { email: user.email, legalname: user.legalname, phone: user.phone });
+      await user.saveUserinfo();
+      res.status(201).send('Userinfo saved successfully');
+    } else {
+      res.status(400).send('User not found');
+    }
+  } catch (error) {
+    console.error('Error saving user info:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+
+app.post('/uploadProfilePicture', upload.single('profilePicture'), async (req, res) => {
+  const userId = req.query.userId;
+  const imageUrl = `/uploads/${req.file.filename}`;
+  try {
+    const user = await User.findByUserID(userId);
+    if (user) {
+      user.profilePicture = imageUrl;
+      await user.saveUserinfo();
+      res.status(200).json({ imageUrl });
+    } else {
+      res.status(404).send('User not found');
+    }
+  } catch (error) {
+    console.error('Error uploading profile picture:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: message }],
+      max_tokens: 2048,
+      temperature: 1,
+    });
+
+    console.log('OpenAI response:', response);
+
+    if (response && response.choices && response.choices.length > 0) {
+      res.json({ response: response.choices[0].message.content });
+    } else {
+      throw new Error('No response choices available');
+    }
+  } catch (error) {
+    console.error('Error handling chat request:', error.message);
+    res.status(500).json({ error: 'An error occurred while processing your request.', details: error.message });
+  }
+});
+
+
+
 app.get('/emoji', async (req, res) => {
   try {
     // Liste der Kategorien von Emojis
@@ -368,6 +424,12 @@ app.get('/emoji', async (req, res) => {
     res.status(500).send('Error fetching emojis');
   }
 });
+
+
+
+
+
+
 
 server.listen(3000, () => {
   console.log("Server running at http://localhost:3000/");

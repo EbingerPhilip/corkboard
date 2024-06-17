@@ -2,13 +2,14 @@ const db = require('../config/db')
 
 class User {
 
-    constructor(username, password, email, phone, name) {
+    constructor(username, password, email, phone, legalname, profilePicture) {
         this.username = username;
         this.password = password;
         this.Chats = [];
         this.email = email;
         this.phone = phone;
-        this.name = name;
+        this.legalname = legalname;
+        this.profilePicture = profilePicture;
     }
 
 
@@ -56,12 +57,13 @@ class User {
         const sql = `
             UPDATE users SET            
             email = ?,                  
-            name = ?,
+            legalname = ?,
             phone = ?,
-            WHERE username = ?          
+            profilePicture = ?
+            WHERE id = ?          
         `;
 
-        await db.execute(sql, [this.email, this.name, this.phone, this.username]);
+        await db.execute(sql, [this.email, this.legalname, this.phone, this.profilePicture, this.id]);
     }
 
     static async checkForUsername(username){
@@ -97,9 +99,9 @@ class User {
             return null;
         }
         const userData = users[0];
-        console.log("UserData " + userData)
+        console.log("UserData " + JSON.stringify(userData));
 
-        const user = new User(userData.username, userData.password);
+        const user = new User(userData.username, userData.password, userData.email, userData.phone, userData.legalname, userData.profilePicture);
         user.id = userData.id;
         user.username = userData.username;
         delete user.password;

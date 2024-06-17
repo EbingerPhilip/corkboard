@@ -5,23 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap">
     <style>
+        body {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .box {
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+            border-radius: 10px;
+            padding: 40px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
         .top-right {
             position: absolute;
             top: 20px;
             right: 20px;
         }
+
         .button.is-x {
             border: none;
             background: transparent;
             font-size: 2rem;
             line-height: 1;
         }
+
         #profile-picture {
             width: 150px;
             height: 150px;
             object-fit: cover;
             border-radius: 50%;
+            border: 3px solid #00d1b2;
+            margin-bottom: 20px;
+        }
+
+        .profile-section {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 2px solid #444;
+        }
+
+        .profile-section img {
+            border: 3px solid #00d1b2;
+        }
+
+        .profile-section a {
+            color: #00d1b2;
+        }
+
+        .content.is-large p {
+            font-size: 1.25em;
+        }
+
+        .button.is-primary {
+            background-color: #00d1b2;
+            border-color: #00d1b2;
+        }
+
+        .button.is-primary:hover {
+            background-color: #00c4a7;
+            border-color: #00c4a7;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -32,23 +93,25 @@
             <button id="back-button" class="button is-x top-right" aria-label="Close">&times;</button>
             <div class="columns is-vcentered is-multiline">
                 <div class="column is-12 has-text-centered">
-                    <figure class="image is-256x256 is-inline-block">
+                    <figure class="image is-256x256 is-inline-block profile-section">
                         <img id="profile-picture" class="is-rounded" src="images/img.png" alt="Profile Picture">
                     </figure>
-                    <input type="file" id="file-input" class="file-input" accept="image/*" style="display: none;">
+                    <input type="file" id="file-input" style="display: none;">
                     <button id="upload-button" class="button is-primary is-inline-block ml-5">Change Picture</button>
-                    <button id="edit-button" class="button is-primary is-inline-block ml-5">Edit Profile</button>
-                    <button id="save-button" class="button is-primary is-inline-block ml-5" style="display: none;">Save Changes</button>
                 </div>
                 <div class="column is-12">
                     <h1 class="title has-text-centered is-size-3" id="profile-username">Username</h1>
                 </div>
                 <div class="column is-12">
                     <div class="content is-large">
-                        <p><strong>Email:</strong> <span id="profile-email" class="is-size-4">example@example.com</span></p>
-                        <p><strong>Name:</strong> <span id="profile-name" class="is-size-4">John Doe</span></p>
-                        <p><strong>Phone:</strong> <span id="profile-phone" class="is-size-4">123-456-7890</span></p>
+                        <p><strong>Email:</strong> <span id="profile-email" class="is-size-4"></span></p>
+                        <p><strong>Name:</strong> <span id="profile-name" class="is-size-4"></span></p>
+                        <p><strong>Phone:</strong> <span id="profile-phone" class="is-size-4"></span></p>
                     </div>
+                </div>
+                <div class="column is-12 button-container">
+                    <button id="edit-button" class="button is-primary is-inline-block">Edit Profile</button>
+                    <button id="save-button" class="button is-primary is-inline-block" style="display: none;">Save Changes</button>
                 </div>
             </div>
         </div>

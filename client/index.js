@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userToAddInput = document.getElementById("UserToAdd");
   const chatList = document.getElementById("chat-list");
   const errorMessage = document.getElementById("error-message");
+  const messages = document.getElementById('messages');
+  const profilePicture = document.getElementById('profile-picture');
 
   let socket;
   let targetId;
@@ -21,6 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const params = new URLSearchParams(window.location.search);
   const userId = params.get('userId');
   console.log(userId);
+
 
   if (!userId) {
     window.location.href = '/login.html';
@@ -49,12 +52,24 @@ document.addEventListener("DOMContentLoaded", async () => {
       usernameLink.textContent = username;
       userIdDisplay.textContent = `ID: ${userId}`;
       usernameLink.href = `/profile.html?userId=${userId}`;
+      profilePicture.src = user.profilePicture;
     } else {
       console.error("Kein Benutzer gefunden");
     }
   } catch (error) {
     console.error("Fehler bei der Anfrage:", error);
   }
+
+  function scrollToBottom() {
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  // Call scrollToBottom when a new message is added
+  const observer = new MutationObserver(scrollToBottom);
+  observer.observe(messages, { childList: true });
+
+  // Initial scroll to the bottom when the page loads
+  scrollToBottom();
 
   async function loadEmojis() {
     try {

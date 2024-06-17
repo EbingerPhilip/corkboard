@@ -6,45 +6,67 @@
     <title>Login</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
     <script src="login.js"></script>
+    <style>
+        .login-container {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            border: 2px solid #dbdbdb;
+            border-radius: 10px;
+        }
+
+        .login-title {
+            color: cadetblue;
+        }
+
+        .button.is-link {
+            background-color: #008b8b;
+            border-color: #008b8b;
+        }
+
+        .button.is-light {
+            background-color: #f5f5f5;
+            border-color: #dbdbdb;
+        }
+    </style>
 </head>
 <body>
-<section class="hero is-fullheight">
-    <div class="hero-body">
-        <div class="container">
-            <div class="columns is-centered">
-                <div class="column is-4-desktop">
-                    <div class="box">
-                        <h1 class="title has-text-centered">Login</h1>
-                        <form id="login-form">
-                            <div class="field">
-                                <label class="label">Username</label>
-                                <div class="control">
-                                    <input class="input" type="text" name="username" id="usernameBox" placeholder="Enter your username" required>
-                                </div>
-                            </div>
-                            <div class="field">
-                                <label class="label">Password</label>
-                                <div class="control">
-                                    <input class="input" type="password" name="password" id="passwordBox" placeholder="Enter your password" required>
-                                </div>
-                            </div>
-                            <div class="field">
-                                <div class="control">
-                                    <button class="button is-link is-fullwidth" type="submit" id="login-button">Login</button>
-                                </div>
-                            </div>
-                            <div class="field">
-                                <div class="control">
-                                    <button id="sign-up-button" class="button is-light is-fullwidth" type="button">Sign Up</button>
-                                </div>
-                            </div>
-                        </form>
-                        <div id="login-error" class="notification is-danger is-hidden"></div>
-                    </div>
+<div class="login-container">
+    <div class="login-box box">
+        <h1 class="title has-text-centered login-title">Login</h1>
+        <form id="login-form">
+            <div class="field">
+                <label class="label">Username</label>
+                <div class="control">
+                    <input class="input" type="text" name="username" id="usernameBox" placeholder="Enter your username" required>
                 </div>
             </div>
-        </div>
+            <div class="field">
+                <label class="label">Password</label>
+                <div class="control">
+                    <input class="input" type="password" name="password" id="passwordBox" placeholder="Enter your password" required>
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    <button class="button is-link is-fullwidth" type="submit" id="login-button">Login</button>
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    <button id="sign-up-button" class="button is-light is-fullwidth" type="button">Sign Up</button>
+                </div>
+            </div>
+        </form>
+        <div id="login-error" class="notification is-danger is-hidden"></div>
     </div>
-</section>
+</div>
 </body>
 </html>
