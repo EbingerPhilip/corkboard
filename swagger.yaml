@@ -199,8 +199,6 @@ paths:
             schema:
               type: object
               properties:
-                User1:
-                  type: string
                 User2:
                   type: string
       responses:
@@ -255,6 +253,13 @@ paths:
               schema:
                 type: string
                 example: "Chat erfolgreich gelöscht"
+        '401':
+          description: Ungültige Anmeldeinformationen
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Invalid Credentials"
         '500':
           description: Interner Serverfehler
           content:
@@ -292,6 +297,13 @@ paths:
               schema:
                 type: string
                 example: "Nachricht erfolgreich gespeichert"
+        '401':
+          description: Ungültige Anmeldeinformationen
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Invalid Credentials"
         '500':
           description: Interner Serverfehler
           content:
@@ -358,7 +370,7 @@ components:
           type: integer
         SenderUserID:
           type: integer
-        ReceiverUserID:
-          type: integer
         TextMessage:
+          type: string
+        Timestamp:
           type: string
