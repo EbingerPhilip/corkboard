@@ -1,0 +1,137 @@
+body {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    font-family: 'Roboto', sans-serif;
+}
+.column.is-3 {
+    border-right: 2px solid #444;
+    height: 100vh;
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+}
+.profile-section {
+    text-align: center;
+    padding: 20px;
+    border-bottom: 2px solid #444;
+}
+.profile-section img {
+    border: 3px solid #00d1b2;
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+.profile-section a {
+    color: #00d1b2;
+}
+.menu-label {
+    color: #00d1b2;
+    font-weight: bold;
+}
+#messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 20px;
+    height: calc(100vh - 180px);
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+.message-bubble {
+    background-color: #444;
+    border-radius: 10px;
+    padding: 12px;
+    margin: 8px 0;
+    max-width: 60%;
+    color: white;
+    position: relative;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    font-family: 'Roboto', sans-serif;
+}
+.message-bubble.you {
+    background-color: #3273dc;
+    align-self: flex-end;
+    text-align: left;
+    right: 5px;
+}
+.message-bubble.them {
+    background-color: #00d1b2;
+    align-self: flex-start;
+}
+.message-header {
+    font-size: 0.8em;
+    color: white;
+    margin-bottom: 5px;
+    background: inherit;
+    border-radius: 10px 10px 0 0;
+    padding: 5px;
+}
+.message-text {
+    font-size: 1em;
+}
+.message-timestamp {
+    font-size: 0.6em;
+    color: lightgray;
+    position: absolute;
+    bottom: 2px;
+    right: 10px;
+    margin-top: 0;
+}
+.error-message {
+    color: red;
+    font-size: 0.8em;
+    display: none;
+    margin-bottom: 10px;
+}
+#message-form {
+    margin-top: 20px;
+}
+#message-form .control.is-expanded {
+    margin-right: 10px;
+}
+#message-form .button.is-link {
+    background-color: #00d1b2;
+    border-color: #00d1b2;
+}
+#message-form .button.is-link:hover {
+    background-color: #00c4a7;
+    border-color: #00c4a7;
+}
+#emoji-button {
+    background-color: #ffdd57;
+    border-color: #ffdd57;
+    color: #fff;
+}
+#emoji-button:hover {
+    background-color: #ffcc00;
+    border-color: #ffcc00;
+}
+
+/* Responsive Design */
+@media (max-width: 800px) {
+    .column.is-3 {
+        height: auto;
+        border-right: none;
+        border-bottom: 2px solid #444;
+    }
+    .column.is-9 {
+        height: auto;
+    }
+    #messages {
+        height: auto;
+    }
+}
+
+@media (max-width: 500px) {
+    .profile-section img {
+        width: 75px;
+        height: 75px;
+    }
+    .message-bubble {
+        max-width: 80%;
+    }
+}
