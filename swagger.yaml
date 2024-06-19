@@ -1,23 +1,23 @@
 openapi: 3.0.3
 info:
   title: Corkboard API
-  description: API für die Verwaltung von Chats, Nachrichten sowie die dazugehörigen User.
+  description: API for managing chats, messages, and related users.
   version: 1.0.0
 servers:
   - url: http://localhost:3000
     description: Test Server
 tags:
   - name: user
-    description: Verwaltung von User
+    description: User management
   - name: chat
-    description: Verwaltung von Chats und Nachrichten
+    description: Chat and message management
 paths:
   /user:
     post:
       tags:
         - user
-      summary: User einloggen
-      description: User werden über die Datenbank eingeloggt.
+      summary: User login
+      description: Users are logged in via the database.
       operationId: Userlogin
       requestBody:
         required: true
@@ -32,32 +32,32 @@ paths:
                   type: string
       responses:
         '201':
-          description: Benutzer erfolgreich eingeloggt
+          description: User successfully logged in
           content:
             text/plain:
               schema:
                 type: string
-                example: "Benutzer erfolgreich eingeloggt"
+                example: "User successfully logged in"
         '403':
-          description: Benutzername oder Passwort falsch
+          description: Invalid username or password
           content:
             text/plain:
               schema:
                 type: string
-                example: "Benutzername oder Passwort falsch"
+                example: "Invalid username or password"
         '500':
-          description: Interner Serverfehler
+          description: Internal server error
           content:
             text/plain:
               schema:
                 type: string
-                example: "Interner Serverfehler"
+                example: "Internal server error"
   /newUser:
     post:
       tags:
         - user
-      summary: Neuen Benutzer erstellen
-      description: Erstellt einen neuen Benutzer in der Datenbank.
+      summary: Create new user
+      description: Creates a new user in the database.
       operationId: newUser
       requestBody:
         required: true
@@ -72,39 +72,39 @@ paths:
                   type: string
       responses:
         '201':
-          description: Benutzer erfolgreich erstellt
+          description: User created successfully
           content:
             text/plain:
               schema:
                 type: string
-                example: "Benutzer erfolgreich erstellt"
+                example: "User created successfully"
         '400':
-          description: Benutzername und Passwort erforderlich
+          description: Username and password required
           content:
             text/plain:
               schema:
                 type: string
-                example: "Benutzername und Passwort erforderlich"
+                example: "Username and password required"
         '409':
-          description: Benutzername bereits in Verwendung
+          description: Username already in use
           content:
             text/plain:
               schema:
                 type: string
-                example: "Benutzername bereits in Verwendung"
+                example: "Username already in use"
         '500':
-          description: Interner Serverfehler
+          description: Internal server error
           content:
             text/plain:
               schema:
                 type: string
-                example: "Interner Serverfehler"
+                example: "Internal server error"
   /updateInfo:
     put:
       tags:
         - user
-      summary: Benutzerinformationen aktualisieren
-      description: Aktualisiert die Informationen eines bestehenden Benutzers wie E-Mail, Name und Telefonnummer.
+      summary: Update user information
+      description: Updates the information of an existing user such as email, name, and phone number.
       operationId: updateInfo
       requestBody:
         required: true
@@ -121,32 +121,32 @@ paths:
                   type: string
       responses:
         '201':
-          description: Benutzerinformationen erfolgreich aktualisiert
+          description: User information updated successfully
           content:
             text/plain:
               schema:
                 type: string
-                example: "Benutzerinformationen erfolgreich aktualisiert"
+                example: "User information updated successfully"
         '400':
-          description: Benutzer nicht gefunden
+          description: User not found
           content:
             text/plain:
               schema:
                 type: string
-                example: "Benutzer nicht gefunden"
+                example: "User not found"
         '500':
-          description: Interner Serverfehler
+          description: Internal server error
           content:
             text/plain:
               schema:
                 type: string
-                example: "Interner Serverfehler"
+                example: "Internal server error"
   /findUser:
     get:
       tags:
         - user
-      summary: Benutzer über UserID suchen
-      description: Sucht einen Benutzer in der Datenbank anhand der Benutzer-ID und liefert UserID und Benutzername.
+      summary: Find user by UserID
+      description: Finds a user in the database by user ID and returns UserID and username.
       operationId: findUser
       parameters:
         - name: UserId
@@ -156,7 +156,7 @@ paths:
             type: integer
       responses:
         '200':
-          description: Erfolgreiche Abfrage
+          description: Query successful
           content:
             application/json:
               schema:
@@ -172,25 +172,25 @@ paths:
                     userID: "123"
                     username: "john_doe"
         '400':
-          description: Benutzer nicht gefunden
+          description: User not found
           content:
             text/plain:
               schema:
                 type: string
-                example: "Benutzer nicht gefunden"
+                example: "User not found"
         '500':
-          description: Interner Serverfehler
+          description: Internal server error
           content:
             text/plain:
               schema:
                 type: string
-                example: "Interner Serverfehler"
+                example: "Internal server error"
   /addChat:
     post:
       tags:
         - chat
-      summary: Neuen Chat erstellen
-      description: Erstellt einen neuen Chat zwischen zwei Benutzern.
+      summary: Create new chat
+      description: Creates a new chat between two users.
       operationId: createChat
       requestBody:
         required: true
@@ -203,7 +203,7 @@ paths:
                   type: string
       responses:
         '201':
-          description: Chat erfolgreich erstellt
+          description: Chat created successfully
           content:
             application/json:
               schema:
@@ -214,27 +214,27 @@ paths:
                     example: 123
                   message:
                     type: string
-                    example: "Chat erfolgreich erstellt"
+                    example: "Chat created successfully"
         '400':
-          description: Benutzer fehlt
+          description: Missing user
           content:
             text/plain:
               schema:
                 type: string
-                example: "Benutzer fehlt"
+                example: "Missing user"
         '500':
-          description: Interner Serverfehler
+          description: Internal server error
           content:
             text/plain:
               schema:
                 type: string
-                example: "Interner Serverfehler"
+                example: "Internal server error"
   /removeChat:
     delete:
       tags:
         - chat
-      summary: Chat löschen
-      description: Löscht einen bestehenden Chat anhand der Chat-ID aus der Datenbank inklusive allen Nachrichten.
+      summary: Delete chat
+      description: Deletes an existing chat by chat ID from the database including all messages.
       operationId: deleteChat
       requestBody:
         required: true
@@ -247,32 +247,32 @@ paths:
                   type: integer
       responses:
         '201':
-          description: Chat erfolgreich gelöscht
+          description: Chat deleted successfully
           content:
             text/plain:
               schema:
                 type: string
-                example: "Chat erfolgreich gelöscht"
+                example: "Chat deleted successfully"
         '401':
-          description: Ungültige Anmeldeinformationen
+          description: Invalid credentials
           content:
             text/plain:
               schema:
                 type: string
-                example: "Invalid Credentials"
+                example: "Invalid credentials"
         '500':
-          description: Interner Serverfehler
+          description: Internal server error
           content:
             text/plain:
               schema:
                 type: string
-                example: "Interner Serverfehler"
+                example: "Internal server error"
   /Message:
     post:
       tags:
         - chat
-      summary: Nachricht speichern
-      description: Speichert eine Nachricht in einem bestimmten Chat.
+      summary: Save message
+      description: Saves a message in a specific chat.
       operationId: saveMessage
       requestBody:
         required: true
@@ -291,32 +291,32 @@ paths:
                   type: string
       responses:
         '201':
-          description: Nachricht erfolgreich gespeichert
+          description: Message saved successfully
           content:
             text/plain:
               schema:
                 type: string
-                example: "Nachricht erfolgreich gespeichert"
+                example: "Message saved successfully"
         '401':
-          description: Ungültige Anmeldeinformationen
+          description: Invalid credentials
           content:
             text/plain:
               schema:
                 type: string
-                example: "Invalid Credentials"
+                example: "Invalid credentials"
         '500':
-          description: Interner Serverfehler
+          description: Internal server error
           content:
             text/plain:
               schema:
                 type: string
-                example: "Interner Serverfehler"
+                example: "Internal server error"
   /Chat:
     get:
       tags:
         - chat
-      summary: Chat abrufen
-      description: Ruft alle Nachrichten eines bestimmten Chats anhand der Chat-ID ab.
+      summary: Retrieve chat
+      description: Retrieves all messages of a specific chat by chat ID.
       operationId: getChat
       parameters:
         - name: ChatID
@@ -326,7 +326,7 @@ paths:
             type: integer
       responses:
         '201':
-          description: Erfolgreiche Abfrage
+          description: Query successful
           content:
             application/json:
               schema:
@@ -338,14 +338,14 @@ paths:
                       $ref: '#/components/schemas/Message'
                   message:
                     type: string
-                    example: "Chat abgerufen"
+                    example: "Chat retrieved"
         '500':
-          description: Interner Serverfehler
+          description: Internal server error
           content:
             text/plain:
               schema:
                 type: string
-                example: "Interner Serverfehler"
+                example: "Internal server error"
 components:
   schemas:
     User:
