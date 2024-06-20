@@ -24,7 +24,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userId = params.get('userId');
   console.log(userId);
 
-
   if (!userId) {
     window.location.href = '/login.html';
     return;
@@ -135,10 +134,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           addChatToUI(chatUsername, userIdToAdd);
           userToAddInput.value = "";
           errorMessage.style.display = "none";
-
-          // Chat nur beim Hinzufügenden Benutzer erstellen
-          // socket.emit('create-chat', { userIdToAdd, chatUsername });
-
         } else {
           console.error("Kein Benutzer gefunden");
           errorMessage.textContent = "User not found";
@@ -217,6 +212,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           if (senderId !== userId) {
             addChatToUI(senderUsername, senderId);
+
+            console.log(`Creating new chat with user ${senderId}`);
+            await saveNewChatInDatabase(senderId, userId); // Hier userId als User1 übergeben
+            console.log(`New chat created with user ${senderId}`);
           }
 
           if (!isGroupChat && senderId === targetId) {
@@ -229,6 +228,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error("Fehler bei der Anfrage:", error);
       }
     });
+
 
     socket.on('group', (data) => {
       if (isGroupChat && data.groupId === targetId) {
@@ -272,9 +272,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         sendGroupMessage(socket, targetId, input.value);
       } else {
         sendMessage(socket, targetId, input.value);
-        createChatIfNotExists(targetId, username, input.value, timestamp);
+        displayMessage(input.value, true, username, timestamp);
       }
-      displayMessage(input.value, true, username, timestamp);
+
       input.value = '';
       if (targetId === 'chatgpt') {
         try {
@@ -395,8 +395,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     //   });
   }
 
-  function createChatIfNotExists(targetId, fromUserId, message, timestamp) {
-    // Placeholder for creating a chat in the future
-    console.log(`Creating chat between ${fromUserId} and ${targetId} with message: ${message}`);
+  async function saveNewChatInDatabase(userIdToAdd, userId) {
+    try {
+      console.log('Saving new chat in database...');
+
+      const response = await fetch(`/addChat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ User2: userIdToAdd, User1: userId })
+      });
+
+      if (response.status === 201) {
+        const result = await response.json();
+        console.log("Chat successfully saved in database with chat ID:", result.chatID);
+      } else {
+        console.error("Error saving chat in database:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error saving chat in database:", error);
+    }
   }
+
+
+
+
 });

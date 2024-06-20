@@ -132,7 +132,7 @@ io.on('connection', (socket) => {
   socket.on('create-chat', async (data) => {
     if (typeof data === 'object' && data.userIdToAdd && data.chatUsername) {
       if (data.userIdToAdd === socket.userId) {
-        console.warn('Cannot create chat with self');
+        console.log('Cannot create chat with self');
         return;
       }
 
@@ -161,7 +161,8 @@ io.on('connection', (socket) => {
   });
 });
 
-app.get('/findUser', async function (req, res) {
+//Endpoint doppelt?!!
+/*app.get('/findUser', async function (req, res) {
   const userId = req.query.UserId;
   const user = await User.findByUserID(userId); // Benutzer aus der Datenbank abrufen
 
@@ -172,9 +173,9 @@ app.get('/findUser', async function (req, res) {
   } else {
     res.status(200).json(user);
   }
-});
+});*/
 
-// Endpoints beibehalten, aber nicht verwendet
+
 app.post('/User', async function (req, res) {
   try {
     const { username, password } = req.body;
@@ -187,6 +188,8 @@ app.post('/User', async function (req, res) {
     const token = jwt.sign({ id: user.id, username: user.username }, secreteKey, { expiresIn: "30min" });
     res.cookie("token", token, {
       httpOnly: true,
+      // sameSite: 'None',
+      // secure: true
     });
 
     res.status(200).json({ user: { id: user.id, username: user.username }, token, message: "Login Successful" });
@@ -216,8 +219,6 @@ app.post('/newUser', async function (req, res) {
   try {
     const { username, password } = req.body;
 
-    //console.log("cheese on server: " + username)
-
     if (!username || !password) {
       return res.status(400).send('Username and password are required');
     }
@@ -240,23 +241,28 @@ app.post('/newUser', async function (req, res) {
 //creates new Chat object
 //takes two Userid returns a Chat id
 app.post('/addChat', async function (req, res){
-try {
-  const {User2} = req.body;
-  const User1 = req.user.id.valueOf()
+  try {
+    const { User2 } = req.body;
+    const User1 = req.user.id.valueOf();
 
-  if (!User2) {
-    return res.status(400).send('missing User');
+    console.log(`Creating chat between User1: ${User1} and User2: ${User2}`);
+
+    if (!User2) {
+      return res.status(400).send('missing User');
+    }
+
+    const chat = new Chat(User1, User2);
+    const chatID = await chat.saveChat();
+
+    console.log(`Chat created successfully with ID: ${chatID}`);
+    res.status(201).json({ chatID, message: "Chat created successfully" });
+
+  } catch (err){
+    console.error('Error creating Chat:', err);
+    res.status(500).send('Internal Server Error');
   }
-
-  const chat = new Chat(User1,User2);
-  const chatID = await chat.saveChat();
-  res.status(201).json({chatID, message: "Chat created successfully"})
-
-}catch (err){
-  console.error('Error creating Chat:', err);
-  res.status(500).send('Internal Server Error')
-}
 });
+
 
 //remove Chat from the Databank
 //takes a Chat id sends message

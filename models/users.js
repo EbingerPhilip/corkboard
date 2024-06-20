@@ -99,7 +99,7 @@ class User {
             return null;
         }
         const userData = users[0];
-        console.log("UserData " + JSON.stringify(userData));
+        // console.log("UserData " + JSON.stringify(userData));
 
         const user = new User(userData.username, userData.password, userData.email, userData.phone, userData.legalname, userData.profilePicture);
         user.id = userData.id;
@@ -111,8 +111,8 @@ class User {
     }
 
 
-
-    static async addNewChat(chatID, UserID) {
+    //musste was ändern damit es geht, wollte die funktion aber noch ned löschen :D ~Julian
+    /*static async addNewChat(chatID, UserID) {
         if (!Number.isInteger(chatID)) {
             console.log("Chat: " + chatID + " has not been initalized correctly")
         }
@@ -129,7 +129,40 @@ class User {
 
         sql = `UPDATE users SET Chats = '${JSON.stringify(chatsArray)}' WHERE id = ${UserID}`;
         await db.execute(sql);
+    }*/
+
+    static async addNewChat(chatID, UserID) {
+        if (!Number.isInteger(chatID)) {
+            console.log("Chat: " + chatID + " has not been initialized correctly");
+            return;
+        }
+
+        let sql = `SELECT * FROM users WHERE id = '${UserID}'`;
+        const [user, _] = await db.execute(sql);
+        if (user.length === 0) {
+            console.log("User: " + UserID + " has not been found");
+            return;
+        }
+
+        const userData = user[0];
+        let chatsArray;
+        try {
+            chatsArray = JSON.parse(userData.Chats);
+        } catch (err) {
+            console.error("Error parsing chats array:", err);
+            chatsArray = [];
+        }
+
+        if (!Array.isArray(chatsArray)) {
+            chatsArray = [];
+        }
+
+        chatsArray.push(chatID);
+
+        sql = `UPDATE users SET Chats = '${JSON.stringify(chatsArray)}' WHERE id = ${UserID}`;
+        await db.execute(sql);
     }
+
 
     static async removeChat(chatID, UserID) {
         let sql = `SELECT * FROM users WHERE id = '${UserID}'`;
