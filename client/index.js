@@ -19,13 +19,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   let isGroupChat = false;
   let username;
   let emojis = [];
+  let chatId;
 
   const params = new URLSearchParams(window.location.search);
   const userId = params.get('userId');
   console.log(userId);
 
-  //hier Logik um die id aus den cookies zu holen
-  //und user auf login.html wenn keine cookies vorhanden sind
   if (!userId) {
     window.location.href = '/login.html';
     return;
@@ -35,7 +34,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   emojiButton.classList.add('button', 'is-rounded', 'is-small');
   form.appendChild(emojiButton);
 
-  // Benutzerinformationen abrufen und anzeigen
   try {
     const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`, {
       method: 'GET',
@@ -65,11 +63,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     messages.scrollTop = messages.scrollHeight;
   }
 
-  // Call scrollToBottom when a new message is added
   const observer = new MutationObserver(scrollToBottom);
   observer.observe(messages, { childList: true });
 
-  // Initial scroll to the bottom when the page loads
   scrollToBottom();
 
   async function loadEmojis() {
@@ -96,7 +92,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   addUserButton.addEventListener("click", async () => {
     const userIdToAdd = userToAddInput.value.trim();
     console.log("user to add:", userIdToAdd);
-    errorMessage.style.display = "none"; // Fehlermeldung immer ausblenden beim Klicken
+    errorMessage.style.display = "none";
 
     if (userIdToAdd) {
       if (userIdToAdd === userId) {
@@ -106,7 +102,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
 
-      // Überprüfen, ob der Chat bereits existiert
       const existingChat = Array.from(chatList.children).find(
           li => li.querySelector('a').dataset.userId === userIdToAdd
       );
@@ -132,8 +127,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           const chatUsername = user.username;
           console.log("Gefundener Benutzername:", chatUsername);
 
-          // Hier den Code ausführen, wenn der Benutzer gefunden wurde
-          addChatToUI(chatUsername, userIdToAdd);
+          const chatID = await saveNewChatInDatabase(userIdToAdd);
+          addChatToUI(chatUsername, userIdToAdd, chatID);
           userToAddInput.value = "";
           errorMessage.style.display = "none";
         } else {
@@ -147,11 +142,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         errorMessage.style.display = "block";
       }
     } else {
-      errorMessage.style.display = "none"; // Fehlermeldung ausblenden, wenn das Feld leer ist
+      errorMessage.style.display = "none";
     }
   });
 
-  function addChatToUI(username, userId) {
+  function addChatToUI(username, userId, chatID) {
     const existingChat = Array.from(chatList.children).find(
         li => li.querySelector('a').dataset.userId === userId
     );
@@ -163,17 +158,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       a.href = "#";
       a.textContent = username;
       a.dataset.userId = userId;
+      a.dataset.chatId = chatID;
       li.appendChild(a);
       chatList.appendChild(li);
 
       a.addEventListener("click", (event) => {
-        //event.preventDefault verhindert, dass das Standartverhalten ausgeführt wird -> Seite wird nicht neu geladen
         event.preventDefault();
         chatTitle.textContent = username;
         targetId = userId;
+        chatId = chatID;
         isGroupChat = false;
-        //hier ChatNachrichten laden
-        // loadChatMessages(targetId, isGroupChat);
+
+        console.log(`Chat ID: ${chatID}`);
       });
     }
   }
@@ -189,14 +185,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log('Connected to server');
       socket.emit('init', userId);
     });
-
-
-    // init nachricht wird darüber an Server geschickt, Server antwortet darauf hin mit einer init
-    // Nachricht, hier kann dann noch was gemacht werden, quasi immer wenn neu connected wird wird das hier ausgeführt, zb irgendwas laden
-/*    socket.on('init', (data) => {
-      console.log('Initialized');
-
-    });*/
 
     socket.on('direct', async (data) => {
       console.log('Received direct message', data);
@@ -215,10 +203,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           const senderUsername = sender.username;
 
           if (senderId !== userId) {
-            addChatToUI(senderUsername, senderId);
-
+            addChatToUI(senderUsername, senderId, data.chatID);
             console.log(`Creating new chat with user ${senderId}`);
-            await saveNewChatInDatabase(senderId, userId); // Hier userId als User1 übergeben
             console.log(`New chat created with user ${senderId}`);
           }
 
@@ -232,7 +218,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error("Fehler bei der Anfrage:", error);
       }
     });
-
 
     socket.on('group', (data) => {
       if (isGroupChat && data.groupId === targetId) {
@@ -255,7 +240,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (response.status === 200) {
           const user = await response.json();
           const chatUsername = user.username;
-          addChatToUI(chatUsername, data.userId);
+          addChatToUI(chatUsername, data.userId, data.chatID);
         } else {
           console.error("Kein Benutzer gefunden");
         }
@@ -275,7 +260,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (isGroupChat) {
         sendGroupMessage(socket, targetId, input.value);
       } else {
-        sendMessage(socket, targetId, input.value);
+        await saveMessageInDatabase(chatId, userId, input.value);
+        sendMessage(socket, targetId, input.value, chatId);
         displayMessage(input.value, true, username, timestamp);
       }
 
@@ -303,24 +289,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  function sendMessage(socket, toUserId, message) {
+  function sendMessage(socket, toUserId, message, chatId) {
     const timestamp = new Date().toISOString();
-    //Nachricht an den Server senden
     socket.emit('direct', {
       toUserId: toUserId,
       text: message,
-      timestamp: timestamp
+      timestamp: timestamp,
+      chatID: chatId
     });
   }
 
-  //wird benötigt um einen eventhandler zu allen exestierenden chats hinzuzufügen
   document.querySelectorAll('.menu-list a').forEach(chatLink => {
     chatLink.addEventListener('click', (event) => {
       event.preventDefault();
       const chatName = event.target.textContent;
       chatTitle.textContent = chatName;
       targetId = event.target.getAttribute('data-user-id') || event.target.getAttribute('data-group-id');
+      chatId = event.target.getAttribute('data-chat-id');
       isGroupChat = event.target.hasAttribute('data-group-id');
+
+      console.log(`Chat ID: ${chatId}`);
     });
   });
 
@@ -387,43 +375,49 @@ document.addEventListener("DOMContentLoaded", async () => {
     messageContainer.scrollTop = messageContainer.scrollHeight;
   }
 
-  function loadChatMessages(targetId, isGroupChat) {
-    messageContainer.innerHTML = '';
-    // Implement your chat loading logic here
-    // Example:
-    // fetch(`/chat/messages/${targetId}`)
-    //   .then(response => response.json())
-    //   .then(data => {
-    //     data.messages.forEach(msg => {
-    //       displayMessage(msg.text, msg.fromUserId === username, msg.fromUserId, msg.timestamp);
-    //     });
-    //   });
-  }
-
-  async function saveNewChatInDatabase(userIdToAdd, userId) {
+  async function saveNewChatInDatabase(userIdToAdd) {
     try {
-      console.log('Saving new chat in database...');
+      console.log('Saving or finding chat in database...');
 
       const response = await fetch(`/addChat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ User2: userIdToAdd, User1: userId })
+        body: JSON.stringify({ User2: userIdToAdd })
       });
 
-      if (response.status === 201) {
+      if (response.status === 200 || response.status === 201) {
         const result = await response.json();
         console.log("Chat successfully saved in database with chat ID:", result.chatID);
+        return result.chatID;
       } else {
-        console.error("Error saving chat in database:", response.statusText);
+        console.error("Error saving or finding chat in database:", response.statusText);
       }
     } catch (error) {
-      console.error("Error saving chat in database:", error);
+      console.error("Error saving or finding chat in database:", error);
     }
   }
 
+  async function saveMessageInDatabase(chatId, userId, message) {
+    try {
+      console.log('Saving message in database...');
 
+      const response = await fetch(`/Message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ChatID: chatId, TextMessage: message })
+      });
 
-
+      if (response.status === 201) {
+        console.log("Message successfully saved in database");
+      } else {
+        console.error("Error saving message in database:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error saving message in database:", error);
+    }
+  }
 });

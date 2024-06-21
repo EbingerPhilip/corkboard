@@ -118,6 +118,36 @@ class Chat {
             console.log(err.message)
         }
     }
+
+    static async findChat(user1, user2) {
+        const sql = `
+      SELECT * FROM chats
+      WHERE (User1 = '${user1}' AND User2 = '${user2}')
+      OR (User1 = '${user2}' AND User2 = '${user1}')
+      LIMIT 1
+    `;
+        const [result, _] = await db.execute(sql);
+        return result.length > 0 ? result[0] : null;
+    }
+
+    static async createMessageTable(tableName) {
+        if (!tableName) {
+            throw new Error('Table name cannot be empty');
+        }
+
+        const createTableSQL = `
+      CREATE TABLE ${tableName} (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        Data JSON NOT NULL
+      )
+    `;
+        try {
+            await db.execute(createTableSQL);
+            console.log(`Table '${tableName}' created successfully`);
+        } catch (error) {
+            console.error(`Error creating table '${tableName}':`, error);
+        }
+    }
 }
 
 

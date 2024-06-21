@@ -103,21 +103,26 @@ io.on('connection', (socket) => {
 
   socket.on('direct', async (data) => {
     if (typeof data === 'object' && data.toUserId && data.text) {
+      const targetSocket = clients[data.toUserId];
+
       const senderResponse = await axios.get(`http://localhost:3000/findUser?UserId=${socket.userId}`);
       const senderUsername = senderResponse.data.username;
 
-      // Sende die Nachricht an alle Sockets des Ziel-Benutzers
-      io.to(data.toUserId).emit('direct', {
-        fromUserId: socket.userId,
-        text: data.text,
-        timestamp: data.timestamp || new Date().toISOString()
-      });
-
-      // Informiere alle Sockets des Ziel-Benutzers über den neuen Chat
-      io.to(data.toUserId).emit('create-chat', {
-        chatName: senderUsername,
-        userId: socket.userId
-      });
+      if (targetSocket) {
+        targetSocket.emit('direct', {
+          fromUserId: socket.userId,
+          text: data.text,
+          timestamp: data.timestamp || new Date().toISOString(),
+          chatID: data.chatID
+        });
+        io.to(targetSocket.id).emit('create-chat', {
+          chatName: senderUsername,
+          userId: socket.userId,
+          chatID: data.chatID
+        });
+      } else {
+        console.log('Empfänger ist offline, Nachricht wird gespeichert.');
+      }
     } else {
       console.warn('Received invalid data format for direct event:', data);
     }
@@ -125,11 +130,16 @@ io.on('connection', (socket) => {
 
   socket.on('create-chat', async (data) => {
     if (typeof data === 'object' && data.userIdToAdd && data.chatUsername) {
-      console.log(`Erstelle Chat für User ${data.userIdToAdd} mit Chatname ${data.chatUsername}`);
-      io.to(data.userIdToAdd).emit('create-chat', {
-        chatName: data.chatUsername,
-        userId: data.userIdToAdd
-      });
+      const targetSocket = clients[data.userIdToAdd];
+      if (targetSocket) {
+        console.log(`Erstelle Chat für User ${data.userIdToAdd} mit Chatname ${data.chatUsername}`);
+        targetSocket.emit('create-chat', {
+          chatName: data.chatUsername,
+          userId: data.userIdToAdd
+        });
+      } else {
+        console.log('Empfänger ist offline, Chat wird in der DB gespeichert.');
+      }
     } else {
       console.warn('Received invalid data format for create-chat event:', data);
     }
