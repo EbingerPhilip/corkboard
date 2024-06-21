@@ -64,9 +64,11 @@ const groups = {
 
 io.on('connection', (socket) => {
   socket.on('init', (userId) => {
-    clients[userId] = socket;
-    socket.userId = userId;
-    socket.emit('init', { messages: [] });
+    clients[userId] = socket;  // Die Socket-Verbindung wird unter der userId gespeichert
+    socket.userId = userId;  // Die userId wird der Socket-Instanz hinzugefügt
+
+    //falls es eine init message geben solln kann man das hier machen, ist jz aber auf der client seite auch auskommentiert
+    // socket.emit('init', { messages: [] });
 
     // Join user to their groups
     for (const groupId in groups) {
@@ -74,6 +76,9 @@ io.on('connection', (socket) => {
         socket.join(`group-${groupId}`);
       }
     }
+
+    // Füge den Socket zum Raum des Benutzers hinzu
+    socket.join(userId);
 
     console.log(`User ${userId} connected`);
   });
@@ -98,32 +103,21 @@ io.on('connection', (socket) => {
 
   socket.on('direct', async (data) => {
     if (typeof data === 'object' && data.toUserId && data.text) {
-      if (data.toUserId === socket.userId) {
-        console.warn('Cannot create chat with self');
-        return;
-      }
-
-      const targetSocket = clients[data.toUserId];
-
-      // Benutzername des Absenders abrufen
       const senderResponse = await axios.get(`http://localhost:3000/findUser?UserId=${socket.userId}`);
       const senderUsername = senderResponse.data.username;
 
-      if (targetSocket) {
-        targetSocket.emit('direct', {
-          fromUserId: socket.userId,
-          text: data.text,
-          timestamp: data.timestamp || new Date().toISOString()
-        });
-        io.to(targetSocket.id).emit('create-chat', {
-          chatName: senderUsername,
-          userId: socket.userId
-        });
-      } else {
-        console.log('Empfänger ist offline, Nachricht wird gespeichert.');
-        // Nachricht in der DB speichern (Platzhalter)
-        // saveChatToDatabase(socket.userId, data.toUserId, data.text, data.timestamp);
-      }
+      // Sende die Nachricht an alle Sockets des Ziel-Benutzers
+      io.to(data.toUserId).emit('direct', {
+        fromUserId: socket.userId,
+        text: data.text,
+        timestamp: data.timestamp || new Date().toISOString()
+      });
+
+      // Informiere alle Sockets des Ziel-Benutzers über den neuen Chat
+      io.to(data.toUserId).emit('create-chat', {
+        chatName: senderUsername,
+        userId: socket.userId
+      });
     } else {
       console.warn('Received invalid data format for direct event:', data);
     }
@@ -131,27 +125,15 @@ io.on('connection', (socket) => {
 
   socket.on('create-chat', async (data) => {
     if (typeof data === 'object' && data.userIdToAdd && data.chatUsername) {
-      if (data.userIdToAdd === socket.userId) {
-        console.log('Cannot create chat with self');
-        return;
-      }
-
-      const targetSocket = clients[data.userIdToAdd];
-      if (targetSocket) {
-        console.log(`Erstelle Chat für User ${data.userIdToAdd} mit Chatname ${data.chatUsername}`);
-        targetSocket.emit('create-chat', {
-          chatName: data.chatUsername,
-          userId: data.userIdToAdd
-        });
-      } else {
-        console.log('Empfänger ist offline, Chat wird in der DB gespeichert.');
-        // Chat in der DB speichern (Platzhalter)
-      }
+      console.log(`Erstelle Chat für User ${data.userIdToAdd} mit Chatname ${data.chatUsername}`);
+      io.to(data.userIdToAdd).emit('create-chat', {
+        chatName: data.chatUsername,
+        userId: data.userIdToAdd
+      });
     } else {
       console.warn('Received invalid data format for create-chat event:', data);
     }
   });
-
 
   socket.on('disconnect', () => {
     if (socket.userId) {
