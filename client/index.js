@@ -24,6 +24,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userId = params.get('userId');
   console.log(userId);
 
+  //hier Logik um die id aus den cookies zu holen
+  //und user auf login.html wenn keine cookies vorhanden sind
   if (!userId) {
     window.location.href = '/login.html';
     return;
@@ -165,11 +167,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       chatList.appendChild(li);
 
       a.addEventListener("click", (event) => {
+        //event.preventDefault verhindert, dass das Standartverhalten ausgeführt wird -> Seite wird nicht neu geladen
         event.preventDefault();
         chatTitle.textContent = username;
         targetId = userId;
         isGroupChat = false;
-        loadChatMessages(targetId, isGroupChat);
+        //hier ChatNachrichten laden
+        // loadChatMessages(targetId, isGroupChat);
       });
     }
   }
@@ -186,13 +190,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       socket.emit('init', userId);
     });
 
-    socket.on('init', (data) => {
-      console.log('Initialized with messages:', data.messages);
-      data.messages.forEach(async msg => {
-        const senderUsername = await getUsernameById(msg.fromUserId);
-        displayMessage(msg.text, msg.fromUserId === userId, senderUsername, msg.timestamp);
-      });
-    });
+
+    // init nachricht wird darüber an Server geschickt, Server antwortet darauf hin mit einer init
+    // Nachricht, hier kann dann noch was gemacht werden, quasi immer wenn neu connected wird wird das hier ausgeführt, zb irgendwas laden
+/*    socket.on('init', (data) => {
+      console.log('Initialized');
+
+    });*/
 
     socket.on('direct', async (data) => {
       console.log('Received direct message', data);
@@ -299,6 +303,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
+  function sendMessage(socket, toUserId, message) {
+    const timestamp = new Date().toISOString();
+    //Nachricht an den Server senden
+    socket.emit('direct', {
+      toUserId: toUserId,
+      text: message,
+      timestamp: timestamp
+    });
+  }
+
+  //wird benötigt um einen eventhandler zu allen exestierenden chats hinzuzufügen
   document.querySelectorAll('.menu-list a').forEach(chatLink => {
     chatLink.addEventListener('click', (event) => {
       event.preventDefault();
@@ -306,18 +321,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       chatTitle.textContent = chatName;
       targetId = event.target.getAttribute('data-user-id') || event.target.getAttribute('data-group-id');
       isGroupChat = event.target.hasAttribute('data-group-id');
-      loadChatMessages(targetId, isGroupChat);
     });
   });
-
-  function sendMessage(socket, toUserId, message) {
-    const timestamp = new Date().toISOString();
-    socket.emit('direct', {
-      toUserId: toUserId,
-      text: message,
-      timestamp: timestamp
-    });
-  }
 
   function sendGroupMessage(socket, groupId, message) {
     const timestamp = new Date().toISOString();
