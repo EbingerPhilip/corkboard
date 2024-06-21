@@ -50,7 +50,6 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-//braucht das wer? hab ich beim mergen ned gecheckt
 app.use(['/addChat', '/removeChat', '/Message','/Chat'],cookieJwtAuth);
 
 const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
@@ -184,7 +183,7 @@ app.post('/User', async function (req, res) {
       // secure: true
     });
 
-    res.status(200).json({ user: { id: user.id, username: user.username }, token, message: "Login Successful" });
+    res.status(200).json({ user, token, message: "Login Successful" });
   } catch (err) {
     console.log(err);
     res.status(500).send('Internal Server Error');
@@ -282,9 +281,9 @@ app.post('/Message', async function (req, res){
   try {
     const {ChatID, TextMessage} = req.body;
 
-    if (!req.user.Chats.includes(Number(ChatID))){
-      return res.status(401).send('Invalid Credentials')
-    }
+    // if (!req.user.Chats.includes(Number(ChatID))){
+    //   return res.status(401).send('Invalid Credentials')
+    // }
 
     const message = new Message(req.user.id, req.user.username, TextMessage)
     const tablename = `Chat${ChatID}`
@@ -309,9 +308,10 @@ app.get('/Chat', async function (req, res){
   try {
     const {ChatID} = req.body;
 
-    if (!req.user.Chats.includes(Number(ChatID))){
+/*    if (!req.user.Chats.includes(Number(ChatID))){
       return res.status(401).send('Invalid Credentials')
-    }
+    }*/
+
     const tablename = `Chat${ChatID}`
     const chatHistory = await Chat.getMessages(tablename);
 

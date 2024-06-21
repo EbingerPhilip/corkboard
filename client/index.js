@@ -203,7 +203,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           const senderUsername = sender.username;
 
           if (senderId !== userId) {
-            addChatToUI(senderUsername, senderId, data.chatID);
+            const chatID = data.chatID;
+
+            addChatToUI(senderUsername, senderId, chatID);
+
             console.log(`Creating new chat with user ${senderId}`);
             console.log(`New chat created with user ${senderId}`);
           }
@@ -260,9 +263,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (isGroupChat) {
         sendGroupMessage(socket, targetId, input.value);
       } else {
-        await saveMessageInDatabase(chatId, userId, input.value);
         sendMessage(socket, targetId, input.value, chatId);
         displayMessage(input.value, true, username, timestamp);
+        await saveMessageInDatabase(chatId, userId, input.value);
       }
 
       input.value = '';
@@ -289,13 +292,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  function sendMessage(socket, toUserId, message, chatId) {
+  function sendMessage(socket, toUserId, message, chatID) {
     const timestamp = new Date().toISOString();
     socket.emit('direct', {
       toUserId: toUserId,
       text: message,
       timestamp: timestamp,
-      chatID: chatId
+      chatID: chatID
     });
   }
 
@@ -373,6 +376,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     messageContainer.appendChild(item);
     messageContainer.scrollTop = messageContainer.scrollHeight;
+  }
+
+  function loadChatMessages(targetId, isGroupChat) {
+    messageContainer.innerHTML = '';
   }
 
   async function saveNewChatInDatabase(userIdToAdd) {
