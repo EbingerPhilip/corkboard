@@ -111,6 +111,7 @@ class User {
     }
 
 
+
     //musste was ändern damit es geht, wollte die funktion aber noch ned löschen :D ~Julian
     /*static async addNewChat(chatID, UserID) {
         if (!Number.isInteger(chatID)) {
@@ -184,6 +185,23 @@ class User {
         await db.execute(sql);
         console.log(this.findByUsername(UserID));
     }
+
+
+    static async getChatIDS(userID) {
+        let sql = `SELECT Chats FROM users WHERE id = '${userID}'`;
+        const [users, _] = await db.execute(sql);
+        console.log(sql);
+        if (users.length === 0) {
+            console.log("not found");
+            return null;
+        }
+        const userData = users[0];
+        console.log("UserData " + JSON.stringify(userData)); // Debugging
+        return userData.Chats;
+    }
+
+
+
 }
 
 module.exports = User;

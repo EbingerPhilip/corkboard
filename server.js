@@ -3,9 +3,7 @@ const axios = require('axios');
 const express = require("express");
 const path = require("path");
 const http = require("http");
-const WebSocket = require("ws");
 const jwt = require("jsonwebtoken");
-const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const socketIo = require('socket.io');
 const swaggerUi = require("swagger-ui-express");
@@ -13,6 +11,9 @@ const YAML = require("yamljs");
 const OpenAI = require("openai");
 const multer = require ('multer');
 
+//waren beide ausgegraut, habs mal auskommentiert falls sie doch noch benötigt werden
+// const WebSocket = require("ws");
+// const bodyParser = require('body-parser');
 
 const User = require('./models/users');
 const Chat = require('./models/chats');
@@ -457,6 +458,29 @@ app.get('/emoji', async (req, res) => {
   }
 });
 
+app.get('/ChatIDs', async (req, res) => {
+  const userId = req.query.userId; // Benutzer-ID aus den Query-Parametern extrahieren
+
+  if (!userId) {
+    return res.status(400).send('User ID is required');
+  }
+
+  try {
+    const chats = await User.getChatIDS(userId);
+    if (!chats) {
+      return res.status(404).send('User not found or no chats available');
+    }
+
+    const chatIDs = JSON.parse(chats);
+    res.status(200).json({ chatIDs });
+  } catch (error) {
+    console.error('Error fetching user or parsing chat IDs:', error);
+    res.status(500).send('Error fetching user or parsing chat IDs');
+  }
+
+
+
+});
 
 
 

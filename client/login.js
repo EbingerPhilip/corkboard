@@ -32,6 +32,23 @@ function loginRequest(event){
         .then(data => {
             if (data.user && data.token) {
                 document.cookie = `token=${data.token}; path=/`;
+
+
+                // Überprüfen, ob die Chats-Liste vorhanden ist und sie als Array speichern
+                if (data.user.Chats) {
+                    try {
+                        const chatsArray = JSON.parse(data.user.Chats); // String in Array umwandeln
+                        console.log('Chats list:', chatsArray); // Debugging
+                        sessionStorage.setItem('userChats', JSON.stringify(chatsArray));
+                        console.log('userChats successfully stored in sessionStorage'); // Debugging
+                    } catch (e) {
+                        console.error('Failed to parse Chats list:', e); // Debugging
+                    }
+                } else {
+                    console.error('Chats list is missing in the user data.');
+                }
+
+
                 window.location.href = `/index.html?userId=${data.user.id}`;
                 console.log(data.user)
             } else {

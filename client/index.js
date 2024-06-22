@@ -30,6 +30,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
+  const userChats = await getChatIDs(parseInt(userId));
+
+  if (Array.isArray(userChats)) {
+    userChats.forEach(chatId => {
+      console.log(`Chat ID: ${chatId}`);
+    });
+  } else {
+    console.error('No user chats found or userChats is not an array.');
+  }
+
+
+
+
   emojiButton.textContent = '😊';
   emojiButton.classList.add('button', 'is-rounded', 'is-small');
   form.appendChild(emojiButton);
@@ -454,4 +467,25 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.error("Error saving message in database:", error);
     }
   }
+
+  async function getChatIDs(userId) {
+    try {
+      const response = await fetch(`/ChatIDs?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.chatIDs;
+    } catch (error) {
+      console.error('Error fetching chat IDs:', error);
+    }
+  }
+
 });
