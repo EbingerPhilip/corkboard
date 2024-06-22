@@ -1,3 +1,27 @@
+async function getChatDetails(userId) {
+  try {
+    const response = await fetch(`/ChatIDs?userId=${userId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Network response was not ok: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('Received chat details:', data.chatDetails); // Debugging
+    return data.chatDetails;
+  } catch (error) {
+    console.error('Error fetching chat details:', error);
+  }
+}
+
+
+
+
 document.addEventListener("DOMContentLoaded", async () => {
   const form = document.getElementById("message-form");
   const input = document.getElementById("input");
@@ -30,17 +54,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  const userChats = await getChatIDs(parseInt(userId));
+  const chatDetails = await getChatDetails(parseInt(userId, 10));
 
-  if (Array.isArray(userChats)) {
-    userChats.forEach(chatId => {
-      console.log(`Chat ID: ${chatId}`);
+  if (Array.isArray(chatDetails)) {
+    const addedChats = new Set(); // Verhindert doppelte Chats
+    chatDetails.forEach(chat => {
+      // Prüfen, ob `chat.userId` die eigene ID ist und entsprechend `otherUserId` setzen
+      const otherUserId = chat.userId === parseInt(userId, 10) ? chat.otherUserId : chat.userId;
+      const otherUsername = chat.otherUsername;
+      if (!addedChats.has(chat.chatId)) {
+        addChatToUI(otherUsername, otherUserId, chat.chatId);
+        addedChats.add(chat.chatId);
+      }
     });
   } else {
-    console.error('No user chats found or userChats is not an array.');
+    console.error('No chat details found or chatDetails is not an array.');
   }
-
-
 
 
   emojiButton.textContent = '😊';
@@ -468,24 +497,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  async function getChatIDs(userId) {
-    try {
-      const response = await fetch(`/ChatIDs?userId=${userId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return data.chatIDs;
-    } catch (error) {
-      console.error('Error fetching chat IDs:', error);
-    }
-  }
 
 });

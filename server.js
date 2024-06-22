@@ -171,7 +171,7 @@ io.on('connection', (socket) => {
 app.post('/User', async function (req, res) {
   try {
     const { username, password } = req.body;
-    const user = await User.findByUsername(username); 
+    const user = await User.findByUsername(username);
 
     if (!user || user.password !== password) {
       return res.status(403).json({ message: "Invalid credentials" });
@@ -458,6 +458,27 @@ app.get('/emoji', async (req, res) => {
   }
 });
 
+// app.get('/ChatIDs', async (req, res) => {
+//   const userId = req.query.userId;
+//
+//   if (!userId) {
+//     return res.status(400).send('User ID is required');
+//   }
+//
+//   try {
+//     const chats = await User.getChatIDS(userId);
+//     if (!chats) {
+//       return res.status(404).send('User not found or no chats available');
+//     }
+//
+//     const chatIDs = JSON.parse(chats);
+//     res.status(200).json({ chatIDs });
+//   } catch (error) {
+//     console.error('Error fetching user or parsing chat IDs:', error);
+//     res.status(500).send('Error fetching user or parsing chat IDs');
+//   }
+// });
+
 app.get('/ChatIDs', async (req, res) => {
   const userId = req.query.userId; // Benutzer-ID aus den Query-Parametern extrahieren
 
@@ -467,25 +488,40 @@ app.get('/ChatIDs', async (req, res) => {
 
   try {
     const chats = await User.getChatIDS(userId);
+    console.log('User chats:', chats); // Debugging
+
     if (!chats) {
       return res.status(404).send('User not found or no chats available');
     }
 
     const chatIDs = JSON.parse(chats);
-    res.status(200).json({ chatIDs });
+    const chatDetails = [];
+
+    for (const chatId of chatIDs) {
+      const userIds = await Chat.getUserIdsByChatId(chatId);
+      console.log(`User IDs for chat ${chatId}:`, userIds); // Debugging
+
+      if (!userIds) continue;
+
+      const otherUserId = userIds.user1 === parseInt(userId, 10) ? userIds.user2 : userIds.user1;
+      const otherUser = await User.findByUserID(otherUserId);
+      console.log(`Other user for chat ${chatId}:`, otherUser); // Debugging
+
+      chatDetails.push({
+        chatId,
+        userId: parseInt(userId, 10), // Aktuelle Benutzer-ID
+        otherUserId,
+        otherUsername: otherUser.username
+      });
+    }
+
+    console.log('Chat details:', chatDetails); // Debugging
+    res.status(200).json({ chatDetails });
   } catch (error) {
     console.error('Error fetching user or parsing chat IDs:', error);
     res.status(500).send('Error fetching user or parsing chat IDs');
   }
-
-
-
 });
-
-
-
-
-
 
 server.listen(3000, () => {
   console.log("Server running at http://localhost:3000/");

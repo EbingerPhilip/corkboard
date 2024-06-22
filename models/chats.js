@@ -180,6 +180,17 @@ class Chat {
             console.error(`Error creating table '${tableName}':`, error);
         }
     }
+
+
+    static async getUserIdsByChatId(chatId) {
+        let sql = `SELECT user1, user2 FROM chats WHERE id = '${chatId}'`;
+        const [chats, _] = await db.execute(sql);
+        if (chats.length === 0) {
+            console.log("Chat not found");
+            return null;
+        }
+        return chats[0];
+    }
 }
 
 
