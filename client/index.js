@@ -54,22 +54,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  const chatDetails = await getChatDetails(parseInt(userId, 10));
 
-  if (Array.isArray(chatDetails)) {
-    const addedChats = new Set(); // Verhindert doppelte Chats
-    chatDetails.forEach(chat => {
-      // Prüfen, ob `chat.userId` die eigene ID ist und entsprechend `otherUserId` setzen
-      const otherUserId = chat.userId === parseInt(userId, 10) ? chat.otherUserId : chat.userId;
-      const otherUsername = chat.otherUsername;
-      if (!addedChats.has(chat.chatId)) {
-        addChatToUI(otherUsername, otherUserId, chat.chatId);
-        addedChats.add(chat.chatId);
-      }
-    });
-  } else {
-    console.error('No chat details found or chatDetails is not an array.');
-  }
+
 
 
   emojiButton.textContent = '😊';
@@ -100,6 +86,53 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (error) {
     console.error("Fehler bei der Anfrage:", error);
   }
+
+
+
+
+
+  const chatDetails = await getChatDetails(parseInt(userId, 10));
+
+  if (Array.isArray(chatDetails)) {
+    const addedChats = new Set();
+    let userIDtoAdd;
+    let usernameToAdd;
+
+    chatDetails.forEach(chat => {
+      const ownUserId = parseInt(userId, 10);
+      const otherUserIDD = parseInt(chat.userId2, 10);
+
+      if(otherUserIDD === ownUserId){
+        userIDtoAdd = chat.userId1;
+        usernameToAdd = chat.username1;
+      }else{
+        userIDtoAdd = chat.userId2;
+        usernameToAdd = chat.username2;
+      }
+
+      // const otherUserId = chat.userId1 === ownUserId ? chat.userId2 : chat.userId1;
+      // const otherUsername = chat.userId1 === ownUserId ? chat.username2 : chat.username1;
+      //
+      // if (!addedChats.has(chat.chatId)) {
+      //   addChatToUI(otherUsername, otherUserId, chat.chatId);
+      //   addedChats.add(chat.chatId);
+      // }
+
+      if (!addedChats.has(chat.chatId)) {
+          addChatToUI(usernameToAdd, userIDtoAdd, chat.chatId);
+          addedChats.add(chat.chatId);
+        }
+
+    });
+  } else {
+    console.error('No chat details found or chatDetails is not an array.');
+  }
+
+
+
+
+
+
 
   function scrollToBottom() {
     messages.scrollTop = messages.scrollHeight;

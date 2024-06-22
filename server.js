@@ -458,27 +458,6 @@ app.get('/emoji', async (req, res) => {
   }
 });
 
-// app.get('/ChatIDs', async (req, res) => {
-//   const userId = req.query.userId;
-//
-//   if (!userId) {
-//     return res.status(400).send('User ID is required');
-//   }
-//
-//   try {
-//     const chats = await User.getChatIDS(userId);
-//     if (!chats) {
-//       return res.status(404).send('User not found or no chats available');
-//     }
-//
-//     const chatIDs = JSON.parse(chats);
-//     res.status(200).json({ chatIDs });
-//   } catch (error) {
-//     console.error('Error fetching user or parsing chat IDs:', error);
-//     res.status(500).send('Error fetching user or parsing chat IDs');
-//   }
-// });
-
 app.get('/ChatIDs', async (req, res) => {
   const userId = req.query.userId; // Benutzer-ID aus den Query-Parametern extrahieren
 
@@ -503,15 +482,15 @@ app.get('/ChatIDs', async (req, res) => {
 
       if (!userIds) continue;
 
-      const otherUserId = userIds.user1 === parseInt(userId, 10) ? userIds.user2 : userIds.user1;
-      const otherUser = await User.findByUserID(otherUserId);
-      console.log(`Other user for chat ${chatId}:`, otherUser); // Debugging
+      const user1 = await User.findByUserID(userIds.user1);
+      const user2 = await User.findByUserID(userIds.user2);
 
       chatDetails.push({
         chatId,
-        userId: parseInt(userId, 10), // Aktuelle Benutzer-ID
-        otherUserId,
-        otherUsername: otherUser.username
+        userId1: userIds.user1,
+        username1: user1.username,
+        userId2: userIds.user2,
+        username2: user2.username
       });
     }
 
@@ -522,6 +501,9 @@ app.get('/ChatIDs', async (req, res) => {
     res.status(500).send('Error fetching user or parsing chat IDs');
   }
 });
+
+
+
 
 server.listen(3000, () => {
   console.log("Server running at http://localhost:3000/");
