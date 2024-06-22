@@ -302,15 +302,15 @@ app.post('/Message', async function (req, res){
   }
 });
 
-//return a Chat
+/*//return a Chat
 //takes a Chat id, returns a List of Message objects
 app.get('/Chat', async function (req, res){
   try {
     const {ChatID} = req.body;
 
-/*    if (!req.user.Chats.includes(Number(ChatID))){
+/!*    if (!req.user.Chats.includes(Number(ChatID))){
       return res.status(401).send('Invalid Credentials')
-    }*/
+    }*!/
 
     const tablename = `Chat${ChatID}`
     const chatHistory = await Chat.getMessages(tablename);
@@ -323,7 +323,37 @@ app.get('/Chat', async function (req, res){
   } catch (err){
     res.status(500).send('Internal Server Error')
   }
+});*/
+
+app.get('/Chat', async function (req, res) {
+    try {
+      const  { ChatID }  = req.query; // Use req.query to get the query parameters
+
+      /*    if (!req.user.Chats.includes(Number(ChatID))){
+          return res.status(401).send('Invalid Credentials')
+          }*/
+
+      if (!ChatID) {
+        return res.status(400).send('ChatID is required');
+      }
+
+      const tableName = `Chat${ChatID}`;
+
+      console.log("tablename: " + tableName);
+
+      const chatHistory = await Chat.getMessages(tableName);
+
+      if (chatHistory) {
+        res.status(200).json({ chatHistory, message: "Messages retrieved successfully" });
+      } else {
+        res.status(500).send('Error in retrieving messages');
+      }
+    } catch (err) {
+      console.error('Error retrieving chat messages:', err);
+      res.status(500).send('Internal Server Error');
+    }
 });
+
 
 
 app.put('/updateInfo', async function (req, res) {

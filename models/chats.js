@@ -97,7 +97,7 @@ class Chat {
        }
     }
 
-    static async getMessages(TableName){
+/*    static async getMessages(TableName){
         try {
             let sql = `SELECT * FROM ${TableName}`
             const [chatString, _] = await db.execute(sql);
@@ -116,6 +116,38 @@ class Chat {
 
         }catch (err){
             console.log(err.message)
+        }
+    }*/
+
+    static async getMessages(tableName) {
+        try {
+            let sql = `SELECT * FROM ${tableName}`;
+            const [chatString, _] = await db.execute(sql);
+            const chat = [];
+            if (chatString.length > 0) {
+                for (let i = 0; i < chatString.length; i++) {
+                    const row = chatString[i];
+                    const message = row.Data;
+
+                    // Überprüfen, ob die Nachricht ein Objekt ist und konvertieren es in einen JSON-String
+                    if (typeof message === 'object') {
+                        chat.push(message);
+                    } else if (typeof message === 'string') {
+                        try {
+                            chat.push(JSON.parse(message));
+                        } catch (err) {
+                            console.error(`Invalid JSON format for message: ${message}`, err);
+                        }
+                    } else {
+                        console.error(`Message is not a valid format: ${message}`);
+                    }
+                }
+                return chat;
+            } else {
+                return null;
+            }
+        } catch (err) {
+            console.log(err.message);
         }
     }
 

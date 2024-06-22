@@ -168,7 +168,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         targetId = userId;
         chatId = chatID;
         isGroupChat = false;
-
+        messageContainer.innerHTML = '';
+        loadChatMessages(chatID);
         console.log(`Chat ID: ${chatID}`);
       });
     }
@@ -310,7 +311,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       targetId = event.target.getAttribute('data-user-id') || event.target.getAttribute('data-group-id');
       chatId = event.target.getAttribute('data-chat-id');
       isGroupChat = event.target.hasAttribute('data-group-id');
-
+      messageContainer.innerHTML = '';
+      loadChatMessages(chatId);
       console.log(`Chat ID: ${chatId}`);
     });
   });
@@ -378,9 +380,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     messageContainer.scrollTop = messageContainer.scrollHeight;
   }
 
-  function loadChatMessages(targetId, isGroupChat) {
-    messageContainer.innerHTML = '';
+  async function loadChatMessages(chatID) {
+    // messageContainer.innerHTML = '';
+    try {
+      const response = await fetch(`/Chat?ChatID=${chatID}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 200) {
+        const result = await response.json();
+        messageContainer.innerHTML = '';
+        result.chatHistory.forEach(msg => {
+          displayMessage(msg.text, msg.fromUserId === userId, msg.senderUsername, msg.timestamp);
+        });
+      } else {
+        console.error("Error loading chat messages:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error loading chat messages:", error);
+    }
   }
+
+
 
   async function saveNewChatInDatabase(userIdToAdd) {
     try {
