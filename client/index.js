@@ -322,7 +322,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       }
 
-      input.value = '';
+
       if (targetId === 'chatgpt') {
         try {
           const response = await fetch('/api/chat', {
@@ -343,8 +343,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           console.error('Error sending message to ChatGPT:', error);
         }
       }else{
-        await saveMessageInDatabase(chatId, userId, input.value);
+        console.log(input.value);
+        await saveMessageInDatabase(userId, username, chatId, input.value);
       }
+      input.value = '';
     }
 
   });
@@ -437,7 +439,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   async function loadChatMessages(chatID) {
-    // messageContainer.innerHTML = '';
     try {
       const response = await fetch(`/Chat?ChatID=${chatID}`, {
         method: 'GET',
@@ -448,9 +449,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (response.status === 200) {
         const result = await response.json();
+        console.log('Received chat history:', result.chatHistory); // Debugging
         messageContainer.innerHTML = '';
         result.chatHistory.forEach(msg => {
-          displayMessage(msg.text, msg.fromUserId === userId, msg.senderUsername, msg.timestamp);
+          console.log('Message:', msg); // Debugging
+
+            displayMessage(msg.text, msg.senderID === userId, msg.sender, msg.timestamp);
         });
       } else {
         console.error("Error loading chat messages:", response.statusText);
@@ -459,6 +463,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.error("Error loading chat messages:", error);
     }
   }
+
 
 
 
@@ -486,7 +491,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  async function saveMessageInDatabase(chatId, userId, message) {
+  async function saveMessageInDatabase( userid, username, chatId, message) {
     try {
       console.log('Saving message in database...');
 
@@ -495,7 +500,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ ChatID: chatId, TextMessage: message })
+        body: JSON.stringify({ userid: userid,  username: username, ChatID: chatId, TextMessage: message })
       });
 
       if (response.status === 201) {

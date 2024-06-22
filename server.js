@@ -278,15 +278,39 @@ app.delete('/removeChat', async function (req, res){
 //save a Message
 //takes a Chat id, User id, Username and Text String
 //Username is needed to avoid needlessly searching for a name in db
+// app.post('/Message', async function (req, res){
+//   try {
+//     const {ChatID, TextMessage,} = req.body;
+//
+//     // if (!req.user.Chats.includes(Number(ChatID))){
+//     //   return res.status(401).send('Invalid Credentials')
+//     // }
+//
+//     const message = new Message(req.user.id, req.user.username, TextMessage)
+//     const tablename = `Chat${ChatID}`
+//
+//     const valid = Message.saveMessage(tablename, message)
+//
+//     if (valid){
+//       res.status(201).send("Message received")
+//     } else {
+//       res.status(500).send('Error in Saving Message')
+//     }
+//
+//   } catch (err){
+//     console.error('Error saving Message:', err);
+//     res.status(500).send('Internal Server Error')
+//   }
+// });
 app.post('/Message', async function (req, res){
   try {
-    const {ChatID, TextMessage} = req.body;
+    const {userid, username, ChatID, TextMessage,} = req.body;
 
     // if (!req.user.Chats.includes(Number(ChatID))){
     //   return res.status(401).send('Invalid Credentials')
     // }
 
-    const message = new Message(req.user.id, req.user.username, TextMessage)
+    const message = new Message(userid, username, TextMessage)
     const tablename = `Chat${ChatID}`
 
     const valid = Message.saveMessage(tablename, message)
