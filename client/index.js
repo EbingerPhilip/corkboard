@@ -266,7 +266,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       } else {
         sendMessage(socket, targetId, input.value, chatId);
         displayMessage(input.value, true, username, timestamp);
-        await saveMessageInDatabase(chatId, userId, input.value);
+
       }
 
       input.value = '';
@@ -289,6 +289,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         } catch (error) {
           console.error('Error sending message to ChatGPT:', error);
         }
+      }else{
+        await saveMessageInDatabase(chatId, userId, input.value);
       }
     }
   });
