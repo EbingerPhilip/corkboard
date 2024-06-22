@@ -293,6 +293,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         await saveMessageInDatabase(chatId, userId, input.value);
       }
     }
+
   });
 
   function sendMessage(socket, toUserId, message, chatID) {
