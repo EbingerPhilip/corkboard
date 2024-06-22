@@ -54,10 +54,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-
-
-
-
   emojiButton.textContent = '😊';
   emojiButton.classList.add('button', 'is-rounded', 'is-small');
   form.appendChild(emojiButton);
@@ -87,10 +83,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Fehler bei der Anfrage:", error);
   }
 
-
-
-
-
   const chatDetails = await getChatDetails(parseInt(userId, 10));
 
   if (Array.isArray(chatDetails)) {
@@ -110,14 +102,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         usernameToAdd = chat.username2;
       }
 
-      // const otherUserId = chat.userId1 === ownUserId ? chat.userId2 : chat.userId1;
-      // const otherUsername = chat.userId1 === ownUserId ? chat.username2 : chat.username1;
-      //
-      // if (!addedChats.has(chat.chatId)) {
-      //   addChatToUI(otherUsername, otherUserId, chat.chatId);
-      //   addedChats.add(chat.chatId);
-      // }
-
       if (!addedChats.has(chat.chatId)) {
           addChatToUI(usernameToAdd, userIDtoAdd, chat.chatId);
           addedChats.add(chat.chatId);
@@ -125,14 +109,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     });
   } else {
-    console.error('No chat details found or chatDetails is not an array.');
+    console.log('User has no chats or no chat details found or chatDetails is not an array.');
   }
-
-
-
-
-
-
 
   function scrollToBottom() {
     messages.scrollTop = messages.scrollHeight;
