@@ -50,8 +50,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+// app.use(['/addChat', '/removeChat', '/Message','/Chat'],cookieJwtAuth);
 
-app.use(['/addChat', '/removeChat', '/Message','/Chat'],cookieJwtAuth);
 
 const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -153,21 +153,6 @@ io.on('connection', (socket) => {
   });
 });
 
-//Endpoint doppelt?!!
-/*app.get('/findUser', async function (req, res) {
-  const userId = req.query.UserId;
-  const user = await User.findByUserID(userId); // Benutzer aus der Datenbank abrufen
-
-  console.log("User: " + user);
-
-  if (!user) {
-    res.status(400).send("no user found");
-  } else {
-    res.status(200).json(user);
-  }
-});*/
-
-
 app.post('/User', async function (req, res) {
   try {
     const { username, password } = req.body;
@@ -234,8 +219,8 @@ app.post('/newUser', async function (req, res) {
 //takes two Userid returns a Chat id
 app.post('/addChat', async function (req, res){
   try {
-    const { User2 } = req.body;
-    const User1 = req.user.id.valueOf();
+    const { User1, User2 } = req.body;
+    // const User1 = req.user.id.valueOf();
 
     console.log(`Creating chat between User1: ${User1} and User2: ${User2}`);
 
@@ -350,10 +335,10 @@ app.get('/Chat', async function (req, res){
   }
 });*/
 
-app.get('/Chat', cookieJwtAuth, async function (req, res) {
+app.get('/Chat', async function (req, res) {
   try {
     const { ChatID } = req.query; // Use req.query to get the query parameters
-
+    console.log("Hallo" + ChatID);
     if (!ChatID) {
       return res.status(400).send('ChatID is required');
     }

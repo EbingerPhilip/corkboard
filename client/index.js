@@ -464,9 +464,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-
-
-
   async function saveNewChatInDatabase(userIdToAdd) {
     try {
       console.log('Saving or finding chat in database...');
@@ -476,7 +473,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ User2: userIdToAdd })
+        body: JSON.stringify({User1: userId, User2: userIdToAdd })
       });
 
       if (response.status === 200 || response.status === 201) {
