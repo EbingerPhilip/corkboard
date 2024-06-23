@@ -181,7 +181,6 @@ class Chat {
         }
     }
 
-
     static async getUserIdsByChatId(chatId) {
         let sql = `SELECT user1, user2 FROM chats WHERE id = '${chatId}'`;
         const [chats, _] = await db.execute(sql);
