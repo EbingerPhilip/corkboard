@@ -103,9 +103,8 @@ class User {
 
         const user = new User(userData.username, userData.password, userData.email, userData.phone, userData.legalname, userData.profilePicture);
         user.id = userData.id;
-        user.username = userData.username;
+        user.Chats = userData.Chats;
         delete user.password;
-        delete user.Chats;
 
         return user
     }

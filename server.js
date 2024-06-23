@@ -30,7 +30,7 @@ app.use(express.static(path.join(__dirname, "client"),{ index : 'login.html' }))
 app.use(cookieParser());
 
 
-const secreteKey = "BigDog";
+const secreteKey = process.env.SECRETE_KEY;
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
@@ -50,8 +50,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// app.use(['/addChat', '/removeChat', '/Message','/Chat'],cookieJwtAuth);
 
+app.use(['/addChat', '/removeChat', '/Message','/Chat'],cookieJwtAuth);
 
 const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -153,6 +153,9 @@ io.on('connection', (socket) => {
   });
 });
 
+
+
+
 app.post('/User', async function (req, res) {
   try {
     const { username, password } = req.body;
@@ -162,7 +165,7 @@ app.post('/User', async function (req, res) {
       return res.status(403).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: user.id, username: user.username }, secreteKey, { expiresIn: "30min" });
+    const token = jwt.sign({ id: user.id, username: user.username, Chats: user.Chats }, secreteKey, { expiresIn: "30min" });
     res.cookie("token", token, {
       httpOnly: true,
       // sameSite: 'None',
@@ -219,8 +222,8 @@ app.post('/newUser', async function (req, res) {
 //takes two Userid returns a Chat id
 app.post('/addChat', async function (req, res){
   try {
-    const { User1, User2 } = req.body;
-    // const User1 = req.user.id.valueOf();
+    const { User2 } = req.body;
+    const User1 = req.user.id.valueOf();
 
     console.log(`Creating chat between User1: ${User1} and User2: ${User2}`);
 
@@ -230,6 +233,20 @@ app.post('/addChat', async function (req, res){
 
     const chat = new Chat(User1, User2);
     const chatID = await chat.saveChat();
+
+    //update token
+    const tokenChats = req.user.Chats
+    tokenChats.push(chatID)
+    const token = jwt.sign({
+      id: req.user.id,
+      username: req.user.username,
+      Chats: tokenChats
+    }, secreteKey, {
+      expiresIn: "30min"
+    });
+    res.cookie("token", token, {
+      httpOnly: true,
+    });
 
     console.log(`Chat created successfully with ID: ${chatID}`);
     res.status(201).json({ chatID, message: "Chat created successfully" });
@@ -258,7 +275,7 @@ app.delete('/removeChat', async function (req, res){
     res.status(201).send("Chat deleted")
   } catch (err){
     console.error('Error deleting Chat:', err);
-    res.status(400).send('Internal Server Error')
+    res.status(500).send('Internal Server Error')
   }
 });
 
@@ -305,7 +322,7 @@ app.post('/Message', async function (req, res){
     if (valid){
       res.status(201).send("Message received")
     } else {
-      res.status(500).send('Error in Saving Message')
+      res.status(400).send('Error in Saving Message')
     }
 
   } catch (err){
@@ -317,7 +334,7 @@ app.post('/Message', async function (req, res){
 app.get('/Chat', async function (req, res) {
   try {
     const { ChatID } = req.query; // Use req.query to get the query parameters
-    console.log("Hallo" + ChatID);
+
     if (!ChatID) {
       return res.status(400).send('ChatID is required');
     }
