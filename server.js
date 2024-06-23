@@ -246,9 +246,11 @@ app.post('/addChat', async function (req, res){
 app.delete('/removeChat', async function (req, res){
   try {
     const {ChatID} = req.body;
-    if (!req.user.Chats.includes(Number(ChatID))){
-      return res.status(401).send('Invalid Credentials')
-    }
+
+    //das ging nicht, vermutlich auch wegen cookies??? Philip weißt du da was? ~Julian
+    // if (!req.user.Chats.includes(Number(ChatID))){
+    //   return res.status(401).send('Invalid Credentials')
+    // }
 
     const chat = await Chat.getChatfromID(ChatID);
 
@@ -311,29 +313,6 @@ app.post('/Message', async function (req, res){
     res.status(500).send('Internal Server Error')
   }
 });
-
-/*//return a Chat
-//takes a Chat id, returns a List of Message objects
-app.get('/Chat', async function (req, res){
-  try {
-    const {ChatID} = req.body;
-
-/!*    if (!req.user.Chats.includes(Number(ChatID))){
-      return res.status(401).send('Invalid Credentials')
-    }*!/
-
-    const tablename = `Chat${ChatID}`
-    const chatHistory = await Chat.getMessages(tablename);
-
-    if (chatHistory){
-      res.status(201).json({chatHistory,message : "Message received"});
-    }else{
-      res.status(500).send('Error in retrieving Messages');
-    }
-  } catch (err){
-    res.status(500).send('Internal Server Error')
-  }
-});*/
 
 app.get('/Chat', async function (req, res) {
   try {

@@ -213,7 +213,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       a.dataset.userId = userId;
       a.dataset.chatId = chatID;
       li.appendChild(a);
-      chatList.appendChild(li);
+      // chatList.appendChild(li);
 
       a.addEventListener("click", (event) => {
         event.preventDefault();
@@ -225,6 +225,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         loadChatMessages(chatID);
         console.log(`Chat ID: ${chatID}`);
       });
+
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "X";
+      deleteButton.className = "delete-button";
+      deleteButton.onclick = async function() {
+        await deleteChat(chatId);
+      };
+      li.appendChild(deleteButton);
+
+      chatList.appendChild(li);
     }
   }
 
@@ -510,5 +520,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  async function deleteChat(chatID) {
+    try {
+      const response = await fetch('/removeChat', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ChatID: chatID })
+      });
+
+      if (response.ok) {
+        console.log("Chat successfully deleted");
+      } else {
+        console.error("Error deleting chat:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+    }
+  }
 
 });
