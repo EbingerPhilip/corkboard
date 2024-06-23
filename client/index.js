@@ -230,7 +230,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       deleteButton.textContent = "X";
       deleteButton.className = "delete-button";
       deleteButton.onclick = async function() {
-        await deleteChat(chatId);
+        await deleteChat(chatId, li);
       };
       li.appendChild(deleteButton);
 
@@ -520,7 +520,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  async function deleteChat(chatID) {
+  async function deleteChat(chatID, chatElement) {
     try {
       const response = await fetch('/removeChat', {
         method: 'DELETE',
@@ -532,6 +532,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (response.ok) {
         console.log("Chat successfully deleted");
+        chatElement.remove();
       } else {
         console.error("Error deleting chat:", response.statusText);
       }
