@@ -58,6 +58,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   emojiButton.classList.add('button', 'is-rounded', 'is-small');
   form.appendChild(emojiButton);
 
+  await displayMessage('Willkommen bei Corkboard', false, 'Corkboard', new Date());
+
   try {
     const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`, {
       method: 'GET',
