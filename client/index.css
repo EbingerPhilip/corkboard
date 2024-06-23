@@ -3,21 +3,6 @@ body {
     color: #e0e0e0;
     font-family: 'Roboto', sans-serif;
 }
-.chat-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 5px;
-}
-.logo-container {
-    display: flex;
-    align-items: center;
-}
-.logo-container img {
-    max-width: 50px;
-    margin-right: 10px;
-}
-
 .column.is-3 {
     border-right: 2px solid #444;
     height: 100vh;
@@ -29,17 +14,12 @@ body {
     padding: 20px;
     border-bottom: 2px solid #444;
 }
-.profile-section img#profile-picture {
+.profile-section img {
     border: 3px solid #00d1b2;
     width: 100px;
     height: 100px;
     object-fit: cover;
     border-radius: 50%;
-}
-.profile-section img.logo-small {
-    border: none;
-    max-width: 50px;
-    margin-bottom: 5px;
 }
 .profile-section a {
     color: #00d1b2;
@@ -55,7 +35,7 @@ body {
     flex-direction: column;
     justify-content: flex-start;
     padding: 20px;
-    height: calc(100vh - 150px);
+    height: calc(100vh - 180px);
     background-color: #1e1e1e;
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
@@ -108,7 +88,7 @@ body {
     margin-bottom: 10px;
 }
 #message-form {
-    margin-top: 5px;
+    margin-top: 20px;
 }
 #message-form .control.is-expanded {
     margin-right: 10px;
@@ -130,6 +110,7 @@ body {
     background-color: #ffcc00;
     border-color: #ffcc00;
 }
+
 /* Responsive Design */
 @media (max-width: 800px) {
     .column.is-3 {
@@ -144,8 +125,9 @@ body {
         height: auto;
     }
 }
+
 @media (max-width: 500px) {
-    .profile-section img#profile-picture {
+    .profile-section img {
         width: 75px;
         height: 75px;
     }
