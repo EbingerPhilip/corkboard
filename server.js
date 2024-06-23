@@ -51,7 +51,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-app.use(['/addChat', '/removeChat', '/Message','/Chat'],cookieJwtAuth);
+app.use(['/addChat', '/removeChat', '/Message','/Chat', '/ChatIDs'],cookieJwtAuth);
 
 const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -308,11 +308,13 @@ app.delete('/removeChat', async function (req, res){
 // });
 app.post('/Message', async function (req, res){
   try {
-    const {userid, username, ChatID, TextMessage,} = req.body;
+    const { ChatID, TextMessage,} = req.body;
+    const userid = req.user.id;
+    const username = req.user.username;
 
-    // if (!req.user.Chats.includes(Number(ChatID))){
-    //   return res.status(401).send('Invalid Credentials')
-    // }
+    if (!req.user.Chats.includes(Number(ChatID))){
+      return res.status(401).send('Invalid Credentials')
+    }
 
     const message = new Message(userid, username, TextMessage)
     const tablename = `Chat${ChatID}`
@@ -338,7 +340,9 @@ app.get('/Chat', async function (req, res) {
     if (!ChatID) {
       return res.status(400).send('ChatID is required');
     }
-
+    if (!req.user.Chats.includes(Number(ChatID))){
+      return res.status(401).send('Unauthorized');
+    }
     const tableName = `Chat${ChatID}`;
     console.log("tablename: " + tableName);
 
@@ -354,9 +358,6 @@ app.get('/Chat', async function (req, res) {
     res.status(500).send('Internal Server Error');
   }
 });
-
-
-
 
 app.put('/updateInfo', async function (req, res) {
   try {
@@ -383,8 +384,6 @@ app.put('/updateInfo', async function (req, res) {
   }
 });
 
-
-
 app.post('/uploadProfilePicture', upload.single('profilePicture'), async (req, res) => {
   const userId = req.query.userId;
   const imageUrl = `/uploads/${req.file.filename}`;
@@ -402,8 +401,6 @@ app.post('/uploadProfilePicture', upload.single('profilePicture'), async (req, r
     res.status(500).send('Internal Server Error');
   }
 });
-
-
 
 app.post('/api/chat', async (req, res) => {
   try {
@@ -428,8 +425,6 @@ app.post('/api/chat', async (req, res) => {
     res.status(500).json({ error: 'An error occurred while processing your request.', details: error.message });
   }
 });
-
-
 
 app.get('/emoji', async (req, res) => {
   try {
@@ -460,7 +455,7 @@ app.get('/emoji', async (req, res) => {
 });
 
 app.get('/ChatIDs', async (req, res) => {
-  const userId = req.query.userId; // Benutzer-ID aus den Query-Parametern extrahieren
+  const userId = req.user.id;
 
   if (!userId) {
     return res.status(400).send('User ID is required');
