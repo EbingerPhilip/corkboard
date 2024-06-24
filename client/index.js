@@ -531,25 +531,4 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-  async function getUsernameById(userId) {
-        try {
-            const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.status === 200) {
-                const user = await response.json();
-                return user.username;
-            } else {
-                console.error("Kein Benutzer gefunden");
-                return "Unknown";
-            }
-        } catch (error) {
-            console.error("Fehler bei der Anfrage:", error);
-            return "Unknown";
-        }
-    }
 });
