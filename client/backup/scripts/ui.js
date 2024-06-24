@@ -7,44 +7,43 @@ function displayEmojis(emojis, emojiList) {
 }
 
 function addChatToUI(username, userId, chatID, chatList, messageContainer, chatTitle, loadChatMessages, displayMessage, currentUserId) {
-    const existingChat = Array.from(chatList.children).find(
-        li => li.querySelector('a').dataset.userId === userId
-    );
+    //Create a new chatButton and set data
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.className = "chat-link";
+    a.href = "#";
+    a.textContent = username;
+    a.dataset.userId = userId;
+    a.dataset.chatId = chatID;
+    li.appendChild(a);
 
-    if (!existingChat) {
-        const li = document.createElement("li");
-        const a = document.createElement("a");
-        a.className = "chat-link";
-        a.href = "#";
-        a.textContent = username;
-        a.dataset.userId = userId;
-        a.dataset.chatId = chatID;
-        li.appendChild(a);
+    //add Event Listener which loads the chat and messages
+    a.addEventListener("click", async (event) => {
+        event.preventDefault();
+        chatTitle.textContent = username;
+        messageContainer.innerHTML = '';
+        const chatMessages = await loadChatMessages(chatID);
+        if (chatMessages && chatMessages.chatHistory) {
+            chatMessages.chatHistory.forEach(msg => {
+                displayMessage(msg.text, msg.senderID === currentUserId, msg.sender, msg.timestamp, messageContainer);
+            });
+        }
+        console.log(`Chat ID: ${chatID}`);
+    });
 
-        a.addEventListener("click", async (event) => {
-            event.preventDefault();
-            chatTitle.textContent = username;
-            messageContainer.innerHTML = '';
-            const chatMessages = await loadChatMessages(chatID);
-            if (chatMessages && chatMessages.chatHistory) {
-                chatMessages.chatHistory.forEach(msg => {
-                    displayMessage(msg.text, msg.senderID === currentUserId, msg.sender, msg.timestamp, messageContainer);
-                });
-            }
-            console.log(`Chat ID: ${chatID}`);
-        });
+    //add a deleteButton
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "X";
+    deleteButton.className = "delete-button";
+    //remove chat from database when clicking
+    deleteButton.onclick = async function() {
+        await deleteChat(chatID);
+        //remove chat from the chatlist
+        li.remove();
+    };
+    li.appendChild(deleteButton);
 
-        const deleteButton = document.createElement("button");
-        deleteButton.textContent = "X";
-        deleteButton.className = "delete-button";
-        deleteButton.onclick = async function() {
-            await deleteChat(chatID);
-            li.remove();
-        };
-        li.appendChild(deleteButton);
-
-        chatList.appendChild(li);
-    }
+    chatList.appendChild(li);
 }
 
 function displayMessage(message, isOwnMessage, senderUsername, timestamp, messageContainer) {

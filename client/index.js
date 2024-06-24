@@ -1,6 +1,23 @@
-import { getChatDetails, findUser, loadEmojis, saveNewChatInDatabase, deleteChat, saveMessageInDatabase, loadChatMessages } from './scripts/api.js';
-import { displayEmojis, addChatToUI, displayMessage } from './scripts/ui.js';
-import { connectSocket } from './scripts/socket.js';
+async function getChatDetails(userId) {
+  try {
+    const response = await fetch(`/ChatIDs?userId=${userId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Network response was not ok: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('Received chat details:', data.chatDetails); // Debugging
+    return data.chatDetails;
+  } catch (error) {
+    console.error('Error fetching chat details:', error);
+  }
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   const form = document.getElementById("message-form");
@@ -15,8 +32,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const userToAddInput = document.getElementById("UserToAdd");
   const chatList = document.getElementById("chat-list");
   const errorMessage = document.getElementById("error-message");
+  const messages = document.getElementById('messages');
   const profilePicture = document.getElementById('profile-picture');
 
+  let socket;
   let targetId;
   let isGroupChat = false;
   let username;
@@ -36,22 +55,35 @@ document.addEventListener("DOMContentLoaded", async () => {
   emojiButton.classList.add('button', 'is-rounded', 'is-small');
   form.appendChild(emojiButton);
 
-  await displayMessage('Willkommen bei Corkboard', false, 'Corkboard', new Date(), messageContainer);
+  await displayMessage('Willkommen bei Corkboard', false, 'Corkboard', new Date());
 
   try {
-    const user = await findUser(userId);
-    if (user) {
+    const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.status === 200) {
+      const user = await response.json();
       username = user.username;
+
+      console.log(username);
+
       usernameLink.textContent = username;
       userIdDisplay.textContent = `ID: ${userId}`;
       usernameLink.href = `/profile.html?userId=${userId}`;
       profilePicture.src = user.profilePicture;
+    } else {
+      console.error("Kein Benutzer gefunden");
     }
   } catch (error) {
     console.error("Fehler bei der Anfrage:", error);
   }
 
   const chatDetails = await getChatDetails(parseInt(userId, 10));
+
   if (Array.isArray(chatDetails)) {
     const addedChats = new Set();
     let userIDtoAdd;
@@ -70,7 +102,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       if (!addedChats.has(chat.chatId)) {
-        addChatToUI(usernameToAdd, userIDtoAdd, chat.chatId, chatList, messageContainer, chatTitle, loadChatMessages, displayMessage, userId);
+        addChatToUI(usernameToAdd, userIDtoAdd, chat.chatId);
         addedChats.add(chat.chatId);
       }
     });
@@ -79,16 +111,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function scrollToBottom() {
-    messageContainer.scrollTop = messageContainer.scrollHeight;
+    messages.scrollTop = messages.scrollHeight;
   }
 
   const observer = new MutationObserver(scrollToBottom);
-  observer.observe(messageContainer, { childList: true });
+  observer.observe(messages, { childList: true });
 
   scrollToBottom();
 
-  emojis = await loadEmojis();
-  displayEmojis(emojis, emojiList);
+  async function loadEmojis() {
+    try {
+      const response = await fetch(`/emoji`);
+      emojis = await response.json();
+      console.log(emojis);
+      displayEmojis();
+    } catch (error) {
+      console.error('Error fetching emojis:', error);
+    }
+  }
+
+  await loadEmojis();
+
+  function displayEmojis() {
+    emojis.forEach(emoji => {
+      const option = document.createElement('option');
+      option.value = emoji.character;
+      emojiList.appendChild(option);
+    });
+  }
 
   addUserButton.addEventListener("click", async () => {
     const userIdToAdd = userToAddInput.value.trim();
@@ -115,16 +165,25 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       try {
-        const user = await findUser(userIdToAdd);
-        if (user) {
+        const response = await fetch(`/findUser?UserId=${encodeURIComponent(userIdToAdd)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.status === 200) {
+          const user = await response.json();
+          console.log("User JSON response:", user);
           const chatUsername = user.username;
           console.log("Gefundener Benutzername:", chatUsername);
 
-          const chatID = await saveNewChatInDatabase(userId, userIdToAdd);
-          addChatToUI(chatUsername, userIdToAdd, chatID, chatList, messageContainer, chatTitle, loadChatMessages, displayMessage, userId);
+          const chatID = await saveNewChatInDatabase(userIdToAdd);
+          addChatToUI(chatUsername, userIdToAdd, chatID);
           userToAddInput.value = "";
           errorMessage.style.display = "none";
         } else {
+          console.error("Kein Benutzer gefunden");
           errorMessage.textContent = "User not found";
           errorMessage.style.display = "block";
         }
@@ -138,7 +197,124 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  const socket = connectSocket(io, userId, chatList, messageContainer, chatTitle, username, isGroupChat, targetId);
+  function addChatToUI(username, userId, chatID) {
+    const existingChat = Array.from(chatList.children).find(
+        li => li.querySelector('a').dataset.userId === userId
+    );
+
+    if (!existingChat) {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.className = "chat-link";
+      a.href = "#";
+      a.textContent = username;
+      a.dataset.userId = userId;
+      a.dataset.chatId = chatID;
+      li.appendChild(a);
+
+      a.addEventListener("click", (event) => {
+        event.preventDefault();
+        chatTitle.textContent = username;
+        targetId = userId;
+        chatId = chatID;
+        isGroupChat = false;
+        messageContainer.innerHTML = '';
+        loadChatMessages(chatID);
+        console.log(`Chat ID: ${chatID}`);
+      });
+
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "X";
+      deleteButton.className = "delete-button";
+      deleteButton.onclick = async function() {
+        await deleteChat(chatId, li);
+      };
+      li.appendChild(deleteButton);
+
+      chatList.appendChild(li);
+    }
+  }
+
+  function initSocket() {
+    return io();
+  }
+
+  function connectSocket() {
+    socket = initSocket();
+
+    socket.on('connect', () => {
+      console.log('Connected to server');
+      socket.emit('init', userId);
+    });
+
+    socket.on('direct', async (data) => {
+      console.log('Received direct message', data);
+      const senderId = data.fromUserId;
+
+      try {
+        const response = await fetch(`/findUser?UserId=${encodeURIComponent(senderId)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.status === 200) {
+          const sender = await response.json();
+          const senderUsername = sender.username;
+
+          if (senderId !== userId) {
+            const chatID = data.chatID;
+
+            addChatToUI(senderUsername, senderId, chatID);
+
+            console.log(`Creating new chat with user ${senderId}`);
+            console.log(`New chat created with user ${senderId}`);
+          }
+
+          if (!isGroupChat && senderId === targetId) {
+            displayMessage(data.text, data.fromUserId === userId, senderUsername, data.timestamp);
+          }
+        } else {
+          console.error("Kein Benutzer gefunden");
+        }
+      } catch (error) {
+        console.error("Fehler bei der Anfrage:", error);
+      }
+    });
+
+    socket.on('group', (data) => {
+      if (isGroupChat && data.groupId === targetId) {
+        console.log('Received group message', data);
+        displayMessage(data.text, data.fromUserId === username, data.fromUserId, data.timestamp);
+      }
+    });
+
+    socket.on('create-chat', async (data) => {
+      console.log(`Erstelle Chat für User ${data.userId} mit Chatname ${data.chatName}`);
+
+      try {
+        const response = await fetch(`/findUser?UserId=${encodeURIComponent(data.userId)}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.status === 200) {
+          const user = await response.json();
+          const chatUsername = user.username;
+          addChatToUI(chatUsername, data.userId, data.chatID);
+        } else {
+          console.error("Kein Benutzer gefunden");
+        }
+      } catch (error) {
+        console.error("Fehler bei der Anfrage:", error);
+      }
+    });
+  }
+
+  connectSocket();
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -149,7 +325,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         sendGroupMessage(socket, targetId, input.value);
       } else {
         sendMessage(socket, targetId, input.value, chatId);
-        displayMessage(input.value, true, username, timestamp, messageContainer);
+        displayMessage(input.value, true, username, timestamp);
       }
 
       if (targetId === 'chatgpt') {
@@ -164,7 +340,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           const result = await response.json();
           if (result.response) {
-            displayMessage(`ChatGPT: ${result.response}`, false, 'ChatGPT', timestamp, messageContainer);
+            displayMessage(`ChatGPT: ${result.response}`, false, 'ChatGPT', timestamp);
           } else {
             console.error('Error: No response from ChatGPT');
           }
@@ -190,7 +366,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   document.querySelectorAll('.menu-list a').forEach(chatLink => {
-    chatLink.addEventListener('click', async (event) => {
+    chatLink.addEventListener('click', (event) => {
       event.preventDefault();
       const chatName = event.target.textContent;
       chatTitle.textContent = chatName;
@@ -198,12 +374,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       chatId = event.target.getAttribute('data-chat-id');
       isGroupChat = event.target.hasAttribute('data-group-id');
       messageContainer.innerHTML = '';
-      const chatMessages = await loadChatMessages(chatId);
-      if (chatMessages && chatMessages.chatHistory) {
-        chatMessages.chatHistory.forEach(msg => {
-          displayMessage(msg.text, msg.senderID === userId, msg.sender, msg.timestamp, messageContainer);
-        });
-      }
+      loadChatMessages(chatId);
       console.log(`Chat ID: ${chatId}`);
     });
   });
@@ -216,4 +387,152 @@ document.addEventListener("DOMContentLoaded", async () => {
       timestamp: timestamp
     });
   }
+
+  async function getUsernameById(userId) {
+    try {
+      const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 200) {
+        const user = await response.json();
+        return user.username;
+      } else {
+        console.error("Kein Benutzer gefunden");
+        return "Unknown";
+      }
+    } catch (error) {
+      console.error("Fehler bei der Anfrage:", error);
+      return "Unknown";
+    }
+  }
+
+  async function displayMessage(message, isOwnMessage, senderUsername, timestamp) {
+    const item = document.createElement('div');
+    item.classList.add('message-bubble');
+    if (isOwnMessage) {
+      item.classList.add('you');
+    } else {
+      item.classList.add('them');
+    }
+
+    const messageHeader = document.createElement('div');
+    messageHeader.classList.add('message-header');
+    messageHeader.textContent = isOwnMessage ? `You` : `${senderUsername}`;
+
+    const messageText = document.createElement('div');
+    messageText.classList.add('message-text');
+    messageText.textContent = message;
+
+    const messageTimestamp = document.createElement('div');
+    messageTimestamp.classList.add('message-timestamp');
+    messageTimestamp.textContent = new Date(timestamp).toLocaleTimeString('de-DE', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    item.appendChild(messageHeader);
+    item.appendChild(messageText);
+    item.appendChild(messageTimestamp);
+
+    messageContainer.appendChild(item);
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+  }
+
+  async function loadChatMessages(chatID) {
+    try {
+      const response = await fetch(`/Chat?ChatID=${chatID}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 200) {
+        const result = await response.json();
+        console.log('Received chat history:', result.chatHistory); // Debugging
+        messageContainer.innerHTML = '';
+        result.chatHistory.forEach(msg => {
+          console.log('Message:', msg); // Debugging
+
+          displayMessage(msg.text, msg.senderID === userId, msg.sender, msg.timestamp);
+        });
+      } else {
+        console.error("Error loading chat messages:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error loading chat messages:", error);
+    }
+  }
+
+  async function saveNewChatInDatabase(userIdToAdd) {
+    try {
+      console.log('Saving or finding chat in database...');
+
+      const response = await fetch(`/addChat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({User1: userId, User2: userIdToAdd })
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        const result = await response.json();
+        console.log("Chat successfully saved in database with chat ID:", result.chatID);
+        return result.chatID;
+      } else {
+        console.error("Error saving or finding chat in database:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error saving or finding chat in database:", error);
+    }
+  }
+
+  async function saveMessageInDatabase( userid, username, chatId, message) {
+    try {
+      console.log('Saving message in database...');
+
+      const response = await fetch(`/Message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userid: userid,  username: username, ChatID: chatId, TextMessage: message })
+      });
+
+      if (response.status === 201) {
+        console.log("Message successfully saved in database");
+      } else {
+        console.error("Error saving message in database:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error saving message in database:", error);
+    }
+  }
+
+  async function deleteChat(chatID, chatElement) {
+    try {
+      const response = await fetch('/removeChat', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ChatID: chatID })
+      });
+
+      if (response.ok) {
+        console.log("Chat successfully deleted");
+        chatElement.remove();
+      } else {
+        console.error("Error deleting chat:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+    }
+  }
+
 });

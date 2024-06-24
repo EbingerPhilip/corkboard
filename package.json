@@ -4,7 +4,7 @@
 
   "description": "",
 
-  "main": "client/index.js",
+  "main": "client/backup/index.js",
 
   "scripts": {
 
