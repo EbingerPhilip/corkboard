@@ -41,6 +41,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   let emojis = [];
   let chatId;
 
+  //get username from url
+  //todo: geht usernamefromcookies??
   const params = new URLSearchParams(window.location.search);
   const userId = params.get('userId');
   console.log(userId);
@@ -54,9 +56,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   emojiButton.classList.add('button', 'is-rounded', 'is-small');
   form.appendChild(emojiButton);
 
-  await displayMessage('Willkommen bei Corkboard', false, 'Corkboard', new Date());
+
 
   try {
+      //get Username from userid
     const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`, {
       method: 'GET',
       headers: {
@@ -68,12 +71,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       const user = await response.json();
       username = user.username;
 
-      console.log(username);
-
+      //set user details in profile section
       usernameLink.textContent = username;
       userIdDisplay.textContent = `ID: ${userId}`;
       usernameLink.href = `/profile.html?userId=${userId}`;
       profilePicture.src = user.profilePicture;
+
+      //send welcome message
+      await displayMessage('Willkommen bei Corkboard ' + username +"!", false, 'Corkboard', new Date());
+
     } else {
       console.error("Kein Benutzer gefunden");
     }
@@ -81,10 +87,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Fehler bei der Anfrage:", error);
   }
 
+  //load all chats
   const chatDetails = await getChatDetails(parseInt(userId, 10));
+    if (Array.isArray(chatDetails)) {
 
-  if (Array.isArray(chatDetails)) {
-    const addedChats = new Set();
     let userIDtoAdd;
     let usernameToAdd;
 
@@ -92,6 +98,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const ownUserId = parseInt(userId, 10);
       const otherUserIDD = parseInt(chat.userId2, 10);
 
+      //check if target userid is own userid --> switch
       if (otherUserIDD === ownUserId) {
         userIDtoAdd = chat.userId1;
         usernameToAdd = chat.username1;
@@ -100,16 +107,31 @@ document.addEventListener("DOMContentLoaded", async () => {
         usernameToAdd = chat.username2;
       }
 
-      if (!addedChats.has(chat.chatId)) {
-        addChatToUI(usernameToAdd, userIDtoAdd, chat.chatId);
-        addedChats.add(chat.chatId);
-      }
+      //add the chat to the ui
+      addChatToUI(usernameToAdd, userIDtoAdd, chat.chatId);
     });
   } else {
     console.log('User has no chats or no chat details found or chatDetails is not an array.');
   }
 
-  function scrollToBottom() {
+    //set eventListener for every loaded chat
+    //opens the chat and sets the right parameters when clickin
+    //loads the messages from the database
+  document.querySelectorAll('.menu-list a').forEach(chatLink => {
+        chatLink.addEventListener('click', (event) => {
+            //prevents from refreshing the site when clicking
+            event.preventDefault();
+            const chatName = event.target.textContent;
+            chatTitle.textContent = chatName;
+            targetId = event.target.getAttribute('data-user-id')
+            chatId = event.target.getAttribute('data-chat-id');
+            messageContainer.innerHTML = '';
+            loadChatMessages(chatId);
+            console.log(`Chat ID: ${chatId}`);
+        });
+    });
+
+    function scrollToBottom() {
     messages.scrollTop = messages.scrollHeight;
   }
 
@@ -139,116 +161,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  addUserButton.addEventListener("click", async () => {
-    const userIdToAdd = userToAddInput.value.trim();
-    console.log("user to add:", userIdToAdd);
-    errorMessage.style.display = "none";
-
-    if (userIdToAdd) {
-      if (userIdToAdd === userId) {
-        console.error("You cannot add your own ID");
-        errorMessage.textContent = "You cannot add your own ID";
-        errorMessage.style.display = "block";
-        return;
-      }
-
-      const existingChat = Array.from(chatList.children).find(
-          li => li.querySelector('a').dataset.userId === userIdToAdd
-      );
-
-      if (existingChat) {
-        console.error("Chat already exists");
-        errorMessage.textContent = "Chat already exists";
-        errorMessage.style.display = "block";
-        return;
-      }
-
-      try {
-        const response = await fetch(`/findUser?UserId=${encodeURIComponent(userIdToAdd)}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.status === 200) {
-          const user = await response.json();
-          console.log("User JSON response:", user);
-          const chatUsername = user.username;
-          console.log("Gefundener Benutzername:", chatUsername);
-
-          const chatID = await saveNewChatInDatabase(userIdToAdd);
-          addChatToUI(chatUsername, userIdToAdd, chatID);
-          userToAddInput.value = "";
-          errorMessage.style.display = "none";
-        } else {
-          console.error("Kein Benutzer gefunden");
-          errorMessage.textContent = "User not found";
-          errorMessage.style.display = "block";
-        }
-      } catch (error) {
-        console.error("Fehler bei der Anfrage:", error);
-        errorMessage.textContent = "Error during request";
-        errorMessage.style.display = "block";
-      }
-    } else {
-      errorMessage.style.display = "none";
-    }
-  });
-
-  function addChatToUI(username, userId, chatID) {
-    const existingChat = Array.from(chatList.children).find(
-        li => li.querySelector('a').dataset.userId === userId
-    );
-
-    if (!existingChat) {
-      const li = document.createElement("li");
-      const a = document.createElement("a");
-      a.className = "chat-link";
-      a.href = "#";
-      a.textContent = username;
-      a.dataset.userId = userId;
-      a.dataset.chatId = chatID;
-      li.appendChild(a);
-
-      a.addEventListener("click", (event) => {
-        event.preventDefault();
-        chatTitle.textContent = username;
-        targetId = userId;
-        chatId = chatID;
-        messageContainer.innerHTML = '';
-        loadChatMessages(chatID);
-        console.log(`Chat ID: ${chatID}`);
-      });
-
-      const deleteButton = document.createElement("button");
-      deleteButton.textContent = "X";
-      deleteButton.className = "delete-button";
-      deleteButton.onclick = async function() {
-        await deleteChat(chatId, li);
-      };
-      li.appendChild(deleteButton);
-
-      chatList.appendChild(li);
-    }
-  }
-
-  function initSocket() {
-    return io();
-  }
+  connectSocket();
 
   function connectSocket() {
+    //initialise the socket connection
     socket = initSocket();
 
+    //connect to the server
     socket.on('connect', () => {
       console.log('Connected to server');
+      //sent "init" event to server
       socket.emit('init', userId);
     });
 
+
+    //receive a message
     socket.on('direct', async (data) => {
-      console.log('Received direct message', data);
       const senderId = data.fromUserId;
 
+      //get username
       try {
         const response = await fetch(`/findUser?UserId=${encodeURIComponent(senderId)}`, {
           method: 'GET',
@@ -261,17 +192,15 @@ document.addEventListener("DOMContentLoaded", async () => {
           const sender = await response.json();
           const senderUsername = sender.username;
 
-          if (senderId !== userId) {
+          //if the message isn´t from
+          // if (senderId !== userId) {
             const chatID = data.chatID;
-
             addChatToUI(senderUsername, senderId, chatID);
+          // }
 
-            console.log(`Creating new chat with user ${senderId}`);
-            console.log(`New chat created with user ${senderId}`);
-          }
-
+          //display the Message if user is in the chat
           if (senderId === targetId) {
-            await displayMessage(data.text, data.fromUserId === userId, senderUsername, data.timestamp);
+            await displayMessage(data.text, false, senderUsername, data.timestamp);
           }
         } else {
           console.error("Kein Benutzer gefunden");
@@ -282,9 +211,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     socket.on('create-chat', async (data) => {
-      console.log(`Erstelle Chat für User ${data.userId} mit Chatname ${data.chatName}`);
-
       try {
+        //get username
         const response = await fetch(`/findUser?UserId=${encodeURIComponent(data.userId)}`, {
           method: 'GET',
           headers: {
@@ -305,19 +233,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  connectSocket();
+    function initSocket() {
+        return io();
+    }
 
+
+  //send Button
   form.addEventListener('submit', async (event) => {
+      //prevent side reload
     event.preventDefault();
-    const messageText = input.value.trim().toLowerCase();
-    if (input.value && targetId) {
+    const messageText = input.value
+    if (messageText && targetId) {
       const timestamp = new Date().toISOString();
 
-      sendMessage(socket, targetId, input.value, chatId);
-      displayMessage(input.value, true, username, timestamp);
+      displayMessage(messageText, true, username, timestamp);
 
+
+      //if you send to chatgpt
       if (targetId === 'chatgpt') {
         try {
+          //send message to server
           const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
@@ -327,7 +262,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           });
 
           const result = await response.json();
+
           if (result.response) {
+              //display the result message
             displayMessage(`ChatGPT: ${result.response}`, false, 'ChatGPT', timestamp);
           } else {
             console.error('Error: No response from ChatGPT');
@@ -336,56 +273,124 @@ document.addEventListener("DOMContentLoaded", async () => {
           console.error('Error sending message to ChatGPT:', error);
         }
       } else {
-        console.log(input.value);
+        //if you don´t send to chat gpt send the message to the server and save the message in the database
+        sendMessage(socket, targetId, input.value, chatId);
         await saveMessageInDatabase(userId, username, chatId, input.value);
       }
+      //clear the input field
       input.value = '';
     }
   });
 
+  //add User
+  addUserButton.addEventListener("click", async () => {
+        const userIdToAdd = userToAddInput.value.trim();
+        console.log("user to add:", userIdToAdd);
+        errorMessage.style.display = "none";
+
+        //if there is an input
+        if (userIdToAdd) {
+            //filter own userid
+            if (userIdToAdd === userId) {
+                console.error("You cannot add your own ID");
+                errorMessage.textContent = "You cannot add your own ID";
+                errorMessage.style.display = "block";
+                return;
+            }
+
+            //filter existing chats
+            const existingChat = Array.from(chatList.children).find(
+                li => li.querySelector('a').dataset.userId === userIdToAdd
+            );
+            if (existingChat) {
+                console.error("Chat already exists");
+                errorMessage.textContent = "Chat already exists";
+                errorMessage.style.display = "block";
+                return;
+            }
+
+            try {
+                //try if there is a user with this id and get his username
+                const response = await fetch(`/findUser?UserId=${encodeURIComponent(userIdToAdd)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.status === 200) {
+                    const user = await response.json();
+                    const chatUsername = user.username;
+
+                    //save Chat in Database
+                    const chatID = await saveNewChatInDatabase(userIdToAdd);
+                    //add Chat to UI :D
+                    addChatToUI(chatUsername, userIdToAdd, chatID);
+                    //reset input und error message
+                    userToAddInput.value = "";
+                    errorMessage.style.display = "none";
+                } else {
+                    console.error("Kein Benutzer gefunden");
+                    errorMessage.textContent = "User not found";
+                    errorMessage.style.display = "block";
+                }
+            } catch (error) {
+                console.error("Fehler bei der Anfrage:", error);
+                errorMessage.textContent = "Error during request";
+                errorMessage.style.display = "block";
+            }
+        } else {
+            //reset error message if input is empty
+            errorMessage.style.display = "none";
+        }
+    });
+
+  function addChatToUI(username, userId, chatID) {
+        const existingChat = Array.from(chatList.children).find(
+            li => li.querySelector('a').dataset.userId === userId
+        );
+
+        if (!existingChat) {
+            const li = document.createElement("li");
+            const a = document.createElement("a");
+            a.className = "chat-link";
+            a.href = "#";
+            a.textContent = username;
+            a.dataset.userId = userId;
+            a.dataset.chatId = chatID;
+            li.appendChild(a);
+
+            a.addEventListener("click", (event) => {
+                event.preventDefault();
+                chatTitle.textContent = username;
+                targetId = userId;
+                chatId = chatID;
+                messageContainer.innerHTML = '';
+                loadChatMessages(chatID);
+                console.log(`Chat ID: ${chatID}`);
+            });
+
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "X";
+            deleteButton.className = "delete-button";
+            deleteButton.onclick = async function() {
+                await deleteChat(chatId, li);
+            };
+            li.appendChild(deleteButton);
+
+            chatList.appendChild(li);
+        }
+    }
+
   function sendMessage(socket, toUserId, message, chatID) {
     const timestamp = new Date().toISOString();
+    //send message to the server
     socket.emit('direct', {
       toUserId: toUserId,
       text: message,
       timestamp: timestamp,
       chatID: chatID
     });
-  }
-
-  document.querySelectorAll('.menu-list a').forEach(chatLink => {
-    chatLink.addEventListener('click', (event) => {
-      event.preventDefault();
-      const chatName = event.target.textContent;
-      chatTitle.textContent = chatName;
-      targetId = event.target.getAttribute('data-user-id')
-      chatId = event.target.getAttribute('data-chat-id');
-      messageContainer.innerHTML = '';
-      loadChatMessages(chatId);
-      console.log(`Chat ID: ${chatId}`);
-    });
-  });
-
-  async function getUsernameById(userId) {
-    try {
-      const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.status === 200) {
-        const user = await response.json();
-        return user.username;
-      } else {
-        console.error("Kein Benutzer gefunden");
-        return "Unknown";
-      }
-    } catch (error) {
-      console.error("Fehler bei der Anfrage:", error);
-      return "Unknown";
-    }
   }
 
   async function displayMessage(message, isOwnMessage, senderUsername, timestamp) {
@@ -418,32 +423,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     messageContainer.appendChild(item);
     messageContainer.scrollTop = messageContainer.scrollHeight;
-  }
-
-  async function loadChatMessages(chatID) {
-    try {
-      const response = await fetch(`/Chat?ChatID=${chatID}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.status === 200) {
-        const result = await response.json();
-        console.log('Received chat history:', result.chatHistory); // Debugging
-        messageContainer.innerHTML = '';
-        result.chatHistory.forEach(msg => {
-          console.log('Message:', msg); // Debugging
-
-          displayMessage(msg.text, msg.senderID === userId, msg.sender, msg.timestamp);
-        });
-      } else {
-        console.error("Error loading chat messages:", response.statusText);
-      }
-    } catch (error) {
-      console.error("Error loading chat messages:", error);
-    }
   }
 
   async function saveNewChatInDatabase(userIdToAdd) {
@@ -492,6 +471,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+    async function loadChatMessages(chatID) {
+        try {
+            const response = await fetch(`/Chat?ChatID=${chatID}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.status === 200) {
+                const result = await response.json();
+                console.log('Received chat history:', result.chatHistory); // Debugging
+                messageContainer.innerHTML = '';
+                result.chatHistory.forEach(msg => {
+                    console.log('Message:', msg); // Debugging
+
+                    displayMessage(msg.text, msg.senderID === userId, msg.sender, msg.timestamp);
+                });
+            } else {
+                console.error("Error loading chat messages:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error loading chat messages:", error);
+        }
+    }
+
   async function deleteChat(chatID, chatElement) {
     try {
       const response = await fetch('/removeChat', {
@@ -513,4 +518,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  async function getUsernameById(userId) {
+        try {
+            const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.status === 200) {
+                const user = await response.json();
+                return user.username;
+            } else {
+                console.error("Kein Benutzer gefunden");
+                return "Unknown";
+            }
+        } catch (error) {
+            console.error("Fehler bei der Anfrage:", error);
+            return "Unknown";
+        }
+    }
 });

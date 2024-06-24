@@ -5,16 +5,44 @@ const handleSocketConnection = (io) => {
 
     io.on('connection', (socket) => {
         socket.on('init', (userId) => {
+            //add socket to clients list
             clients[userId] = socket;
+            //add user id to socket
             socket.userId = userId;
-
-            //falls es eine init message geben solln kann man das hier machen, ist jz aber auf der client seite auch auskommentiert
-            // socket.emit('init', { messages: [] });
-
-            // Füge den Socket zum Raum des Benutzers hinzu
-            socket.join(userId);
+            // socket.join(userId);
 
             console.log(`User ${userId} connected`);
+        });
+
+        socket.on('direct', async (data) => {
+            if (typeof data === 'object' && data.toUserId && data.text) {
+                const targetSocket = clients[data.toUserId];
+
+                //get sender username
+                const senderResponse = await axios.get(`http://localhost:3000/findUser?UserId=${socket.userId}`);
+                const senderUsername = senderResponse.data.username;
+
+                //if the user is online
+                if (targetSocket) {
+                    //sends message to the target client
+                    targetSocket.emit('direct', {
+                        fromUserId: socket.userId,
+                        text: data.text,
+                        timestamp: data.timestamp,
+                        chatID: data.chatID
+                    });
+                    //triggers the create Chat event at the target
+                    io.to(targetSocket.id).emit('create-chat', {
+                        chatName: senderUsername,
+                        userId: socket.userId,
+                        chatID: data.chatID
+                    });
+                } /*else {
+                    //receiver is offline, messages are just stored in the database
+                }*/
+            } else {
+                console.warn('Received invalid data format for direct event:', data);
+            }
         });
 
         socket.on('create-chat', async (data) => {
@@ -26,40 +54,15 @@ const handleSocketConnection = (io) => {
                         chatName: data.chatUsername,
                         userId: data.userIdToAdd
                     });
-                } else {
-                    console.log('User is offline, Chat only stored in database.');
-                }
+                } /*else {
+                    //User is offline, Chat only stored in database
+                }*/
             } else {
                 console.warn('Received invalid data format for create-chat event:', data);
             }
         });
 
-        socket.on('direct', async (data) => {
-            if (typeof data === 'object' && data.toUserId && data.text) {
-                const targetSocket = clients[data.toUserId];
 
-                const senderResponse = await axios.get(`http://localhost:3000/findUser?UserId=${socket.userId}`);
-                const senderUsername = senderResponse.data.username;
-
-                if (targetSocket) {
-                    targetSocket.emit('direct', {
-                        fromUserId: socket.userId,
-                        text: data.text,
-                        timestamp: data.timestamp || new Date().toISOString(),
-                        chatID: data.chatID
-                    });
-                    io.to(targetSocket.id).emit('create-chat', {
-                        chatName: senderUsername,
-                        userId: socket.userId,
-                        chatID: data.chatID
-                    });
-                } else {
-                    console.log('Empfänger ist offline, Nachricht wird gespeichert.');
-                }
-            } else {
-                console.warn('Received invalid data format for direct event:', data);
-            }
-        });
 
         socket.on('disconnect', () => {
             if (socket.userId) {
