@@ -223,6 +223,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (response.status === 200) {
           const user = await response.json();
           const chatUsername = user.username;
+
+          //filter if chat exists in addChatToUi method
           addChatToUI(chatUsername, data.userId, data.chatID);
         } else {
           console.error("Kein Benutzer gefunden");
@@ -346,6 +348,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
   function addChatToUI(username, userId, chatID) {
+        //filter existing chats
         const existingChat = Array.from(chatList.children).find(
             li => li.querySelector('a').dataset.userId === userId
         );
@@ -394,22 +397,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   async function displayMessage(message, isOwnMessage, senderUsername, timestamp) {
+     //create new div
     const item = document.createElement('div');
     item.classList.add('message-bubble');
+
+    //sets class depending on the sender
     if (isOwnMessage) {
       item.classList.add('you');
     } else {
       item.classList.add('them');
     }
 
+    //adds creates new message Header
+    //sets name to You or the username of who send it
     const messageHeader = document.createElement('div');
     messageHeader.classList.add('message-header');
     messageHeader.textContent = isOwnMessage ? `You` : `${senderUsername}`;
 
+    //new div with the message
     const messageText = document.createElement('div');
     messageText.classList.add('message-text');
     messageText.textContent = message;
 
+    //adds timestamp and formats it
     const messageTimestamp = document.createElement('div');
     messageTimestamp.classList.add('message-timestamp');
     messageTimestamp.textContent = new Date(timestamp).toLocaleTimeString('de-DE', {
@@ -427,8 +437,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function saveNewChatInDatabase(userIdToAdd) {
     try {
-      console.log('Saving or finding chat in database...');
-
+      //send request to server to add the Chat in the database
       const response = await fetch(`/addChat`, {
         method: 'POST',
         headers: {
@@ -440,6 +449,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (response.status === 200 || response.status === 201) {
         const result = await response.json();
         console.log("Chat successfully saved in database with chat ID:", result.chatID);
+
+        //sends back the chat ID
         return result.chatID;
       } else {
         console.error("Error saving or finding chat in database:", response.statusText);
@@ -451,8 +462,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function saveMessageInDatabase( userid, username, chatId, message) {
     try {
-      console.log('Saving message in database...');
-
+      //sends request to the server to save the message in the database
       const response = await fetch(`/Message`, {
         method: 'POST',
         headers: {
@@ -471,34 +481,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-    async function loadChatMessages(chatID) {
-        try {
-            const response = await fetch(`/Chat?ChatID=${chatID}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+  async function loadChatMessages(chatID) {
+      try {
+          //get messages from database
+          const response = await fetch(`/Chat?ChatID=${chatID}`, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json'
+              }
+          });
 
-            if (response.status === 200) {
-                const result = await response.json();
-                console.log('Received chat history:', result.chatHistory); // Debugging
-                messageContainer.innerHTML = '';
-                result.chatHistory.forEach(msg => {
-                    console.log('Message:', msg); // Debugging
-
-                    displayMessage(msg.text, msg.senderID === userId, msg.sender, msg.timestamp);
-                });
-            } else {
-                console.error("Error loading chat messages:", response.statusText);
-            }
-        } catch (error) {
-            console.error("Error loading chat messages:", error);
-        }
-    }
+          if (response.status === 200) {
+              const result = await response.json();
+              //clear all displayed messages
+              messageContainer.innerHTML = '';
+              //display all messages
+              result.chatHistory.forEach(msg => {
+                  displayMessage(msg.text, msg.senderID === userId, msg.sender, msg.timestamp);
+              });
+          } else {
+              console.error("Error loading chat messages:", response.statusText);
+          }
+      } catch (error) {
+          console.error("Error loading chat messages:", error);
+      }
+  }
 
   async function deleteChat(chatID, chatElement) {
     try {
+      //send request to the server to delete Chat
       const response = await fetch('/removeChat', {
         method: 'DELETE',
         headers: {
