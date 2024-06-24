@@ -1,24 +1,3 @@
-async function getChatDetails(userId) {
-  try {
-    const response = await fetch(`/ChatIDs?userId=${userId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Network response was not ok: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log('Received chat details:', data.chatDetails); // Debugging
-    return data.chatDetails;
-  } catch (error) {
-    console.error('Error fetching chat details:', error);
-  }
-}
-
 document.addEventListener("DOMContentLoaded", async () => {
     const form = document.getElementById("message-form");
     const input = document.getElementById("input");
@@ -213,11 +192,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const sender = await response.json();
                     const senderUsername = sender.username;
 
-                    //if the message isn´t from
-                    // if (senderId !== userId) {
-                    const chatID = data.chatID;
-                    addChatToUI(senderUsername, senderId, chatID);
-                    // }
+          //if the message isn´t from you
+          // if (senderId !== userId) {
+            const chatID = data.chatID;
+            addChatToUI(senderUsername, senderId, chatID);
+          // }
 
                     //display the Message if user is in the chat
                     if (senderId === targetId) {
@@ -397,7 +376,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const deleteButton = document.createElement("button");
             deleteButton.textContent = "X";
             deleteButton.className = "delete-button";
-            deleteButton.onclick = async function () {
+            deleteButton.onclick = async function() {
                 await deleteChat(chatId, li);
             };
             li.appendChild(deleteButton);
@@ -550,7 +529,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    async function getUsernameById(userId) {
+  async function getUsernameById(userId) {
         try {
             const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`, {
                 method: 'GET',
