@@ -16,7 +16,7 @@ const { Builder } = require('xml2js');
 const User = require('./models/users');
 const Chat = require('./models/chats');
 const Message = require('./models/message');
-const {cookieJwtAuth} = require("./models/cookieJwtAuth");
+const {cookieJwtAuth} = require("./cookieJwtAuth");
 
 const app = express();
 const server = http.createServer(app);
@@ -49,7 +49,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-app.use(['/addChat', '/removeChat', '/Message','/Chat', '/ChatIDs'],cookieJwtAuth);
+app.use(['/addChat', '/removeChat', '/Message','/Chat', '/ChatIDs', '/UserID'],cookieJwtAuth);
 
 const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -69,8 +69,6 @@ app.post('/User', async function (req, res) {
       // sameSite: 'None',
       // secure: true
     });
-
-
     const accept = req.headers.accept;
 
     if (accept && accept.includes('application/xml')) {
@@ -87,6 +85,12 @@ app.post('/User', async function (req, res) {
     res.status(500).send('Internal Server Error');
   }
 });
+app.get('/UserID', async function (req, res){
+  const userID = req.user.id;
+  if (userID) {
+    res.status(200).json({userID})
+  }
+})
 
 
 app.get('/findUser', async function (req, res){

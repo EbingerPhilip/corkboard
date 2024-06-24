@@ -499,6 +499,8 @@ document.addEventListener("DOMContentLoaded", async () => {
               result.chatHistory.forEach(msg => {
                   displayMessage(msg.text, msg.senderID == userId, msg.sender, msg.timestamp);
               });
+          }else if (response.status === 405){
+              window.location.href = 'login.html';
           } else {
               console.error("Error loading chat messages:", response.statusText);
           }

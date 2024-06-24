@@ -47,8 +47,8 @@ class User {
         if (login === this.password) {
             return true
         } else {
-            return false
             console.log("bad Passoword")
+            return false
         }
     }
 
