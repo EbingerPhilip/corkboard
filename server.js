@@ -11,6 +11,7 @@ const YAML = require("yamljs");
 const OpenAI = require("openai");
 const multer = require ('multer');
 const handleSocketConnection = require('./socketHandlers');
+const { Builder } = require('xml2js');
 
 const User = require('./models/users');
 const Chat = require('./models/chats');
@@ -69,7 +70,18 @@ app.post('/User', async function (req, res) {
       // secure: true
     });
 
-    res.status(200).json({ user, token, message: "Login Successful" });
+
+    const accept = req.headers.accept;
+
+    if (accept && accept.includes('application/xml')) {
+      const builder = new Builder();
+      const xml = builder.buildObject({ user, token });
+      res.type('application/xml');
+      res.status(200).send(xml);
+    } else {
+      res.status(200).json({ user, token, message: "Login Successful" });
+    }
+
   } catch (err) {
     console.log(err);
     res.status(500).send('Internal Server Error');
@@ -88,7 +100,20 @@ app.get('/findUser', async function (req, res){
   if (!user) {
     res.status(400).send("no user found")
   }else{
-    res.status(200).json(user)
+
+    const accept = req.headers.accept;
+
+    if (accept && accept.includes('application/xml')) {
+      const builder = new Builder();
+      const xml = builder.buildObject(user);
+      res.type('application/xml');
+      res.send(xml);
+    } else {
+      res.status(200).json(user)
+    }
+
+
+    // res.status(200).json(user)
   }
 })
 
@@ -106,8 +131,10 @@ app.post('/newUser', async function (req, res) {
 
     const user = new User(username, password,);
     await user.saveUser();
-    res.status(201).send('User created successfully')
 
+    const accept = req.headers.accept;
+
+    res.status(201).send('User created successfully')
   } catch (error) {
     console.error('Error creating user:', error);
     res.status(500).send('Internal Server Error')
@@ -146,7 +173,17 @@ app.post('/addChat', async function (req, res){
     });
 
     console.log(`Chat created successfully with ID: ${chatID}`);
-    res.status(201).json({ chatID, message: "Chat created successfully" });
+
+    const accept = req.headers.accept;
+
+    if (accept && accept.includes('application/xml')) {
+      const builder = new Builder();
+      const xml = builder.buildObject({ chatID,message: "Chat created successfully" });
+      res.type('application/xml');
+      res.send(xml);
+    } else {
+      res.status(201).json({ chatID,message: "Chat created successfully" });
+    }
 
   } catch (err){
     console.error('Error creating Chat:', err);
@@ -169,7 +206,10 @@ app.delete('/removeChat', async function (req, res){
     const chat = await Chat.getChatfromID(ChatID);
 
     await chat.deleteChat()
-    res.status(201).send("Chat deleted")
+    // res.status(201).send("Chat deleted")
+    //TODO:
+    //reicht das? sonst muss ich den chat auch mit xml schicken
+    res.status(201)
   } catch (err){
     console.error('Error deleting Chat:', err);
     res.status(500).send('Internal Server Error')
@@ -195,6 +235,7 @@ app.post('/Message', async function (req, res){
     const valid = Message.saveMessage(tablename, message)
 
     if (valid){
+      //TODO: reicht auch hier nur der status code?
       res.status(201).send("Message received")
     } else {
       res.status(400).send('Error in Saving Message')
@@ -222,7 +263,18 @@ app.get('/Chat', async function (req, res) {
     const chatHistory = await Chat.getMessages(tableName);
 
     if (chatHistory) {
-      res.status(200).json({ chatHistory, message: "Messages retrieved successfully" });
+
+      const accept = req.headers.accept;
+
+      if (accept && accept.includes('application/xml')) {
+        const builder = new Builder();
+        const xml = builder.buildObject({ chatHistory, message: "Messages retrieved successfully" });
+        res.type('application/xml');
+        res.send(xml);
+      } else {
+        res.status(200).json({ chatHistory, message: "Messages retrieved successfully" });
+      }
+
     } else {
       res.status(500).send('Error in retrieving messages');
     }
@@ -247,6 +299,8 @@ app.put('/updateInfo', async function (req, res) {
       console.log('Saving user info for:', userId);
       console.log('Updated details:', { email: user.email, legalname: user.legalname, phone: user.phone });
       await user.saveUserinfo();
+
+      //TODO und auf ein neues
       res.status(201).send('Userinfo saved successfully');
     } else {
       res.status(400).send('User not found');
@@ -265,7 +319,17 @@ app.post('/uploadProfilePicture', upload.single('profilePicture'), async (req, r
     if (user) {
       user.profilePicture = imageUrl;
       await user.saveUserinfo();
-      res.status(200).json({ imageUrl });
+
+      const accept = req.headers.accept;
+
+      if (accept && accept.includes('application/xml')) {
+        const builder = new Builder();
+        const xml = builder.buildObject({imageUrl});
+        res.type('application/xml');
+        res.send(xml);
+      } else {
+        res.status(200).json({ imageUrl });
+      }
     } else {
       res.status(404).send('User not found');
     }
@@ -289,7 +353,17 @@ app.post('/api/chat', async (req, res) => {
     console.log('OpenAI response:', response);
 
     if (response && response.choices && response.choices.length > 0) {
-      res.json({ response: response.choices[0].message.content });
+
+      const accept = req.headers.accept;
+
+      if (accept && accept.includes('application/xml')) {
+        const builder = new Builder();
+        const xml = builder.buildObject({ response: response.choices[0].message.content });
+        res.type('application/xml');
+        res.send(xml);
+      } else {
+        res.json({ response: response.choices[0].message.content });
+      }
     } else {
       throw new Error('No response choices available');
     }
@@ -319,7 +393,16 @@ app.get('/emoji', async (req, res) => {
     const allEmojis = emojiResults.flat();
 
     // Sendet gesammelte Emojis als JSON Response zurück
-    res.json(allEmojis);
+    const accept = req.headers.accept;
+
+    if (accept && accept.includes('application/xml')) {
+      const builder = new Builder();
+      const xml = builder.buildObject({ allEmojis });
+      res.type('application/xml');
+      res.send(xml);
+    } else {
+      res.json(allEmojis);
+    }
 
   } catch (error) {
     console.error('Error fetching emojis:', error);
@@ -363,8 +446,17 @@ app.get('/ChatIDs', async (req, res) => {
       });
     }
 
-    console.log('Chat details:', chatDetails); // Debugging
-    res.status(200).json({ chatDetails });
+    const accept = req.headers.accept;
+
+    if (accept && accept.includes('application/xml')) {
+      const builder = new Builder();
+      const xml = builder.buildObject({chatDetails});
+      res.type('application/xml');
+      res.send(xml);
+    } else {
+      res.status(200).json({ chatDetails });
+    }
+
   } catch (error) {
     console.error('Error fetching user or parsing chat IDs:', error);
     res.status(500).send('Error fetching user or parsing chat IDs');
