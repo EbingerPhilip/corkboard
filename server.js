@@ -286,18 +286,18 @@ app.get('/Chat', async function (req, res) {
 
 app.put('/updateInfo', async function (req, res) {
   try {
+    //Elemente werden aus Body extrahiert
     const { userId, email, legalname, phone } = req.body;
 
-    console.log(`Received update request for user: ${userId}`);
-    console.log('New details:', { email, legalname, phone });
-
+    //sucht nach User in DB
     const user = await User.findByUserID(userId);
-    if (user) {
-      user.email = email || null;
-      user.legalname = legalname || null;
-      user.phone = phone || null;
-      console.log('Saving user info for:', userId);
+    if (user) {   //Infos werden aktualisiert
+      user.email = email;
+      user.legalname = legalname;
+      user.phone = phone;
       console.log('Updated details:', { email: user.email, legalname: user.legalname, phone: user.phone });
+
+      //speichert Daten in DB
       await user.saveUserinfo();
 
       //TODO und auf ein neues
@@ -311,10 +311,13 @@ app.put('/updateInfo', async function (req, res) {
   }
 });
 
+//'multer' middleware, ermöglicht Hochladen einer einzelnen Datei; verarbeitet dann Datei und fügt sie dem req.file Objekt hinzu
 app.post('/uploadProfilePicture', upload.single('profilePicture'), async (req, res) => {
   const userId = req.query.userId;
+  //Erstellt die URL für das hochgeladene Bild, basierend auf dem Dateinamen, der von multer generiert wurde und im req.file`-Objekt gespeichert ist.
   const imageUrl = `/uploads/${req.file.filename}`;
   try {
+    //sucht nach User in Db
     const user = await User.findByUserID(userId);
     if (user) {
       user.profilePicture = imageUrl;
@@ -341,8 +344,10 @@ app.post('/uploadProfilePicture', upload.single('profilePicture'), async (req, r
 
 app.post('/api/chat', async (req, res) => {
   try {
+    //extrahiert message aus req.body
     const { message } = req.body;
 
+    //sendet Anfrage an OpenAi API um ANtwort auf Nachricht von User zu generieren
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: message }],

@@ -9,14 +9,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const fileInput = document.getElementById('file-input');
     const uploadButton = document.getElementById('upload-button');
     const backButton = document.getElementById('back-button');
-
+    const editButton = document.getElementById('edit-button');
+    const saveButton = document.getElementById('save-button');
+    
+    //läd Userprofile für angegebene userID
     async function loadUserProfile(userId) {
         try {
-            console.log('Lade Benutzerprofil für:', userId);
-            const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`);
-            const user = await response.json();
-            console.log('Erhaltene Benutzerdaten:', user);
+            const response = await fetch(`/findUser?UserId=${encodeURIComponent(userId)}`); //fetch Anfrage an findUser
+            const user = await response.json();  //parsed JSON-Antwort und speichert Daten in 'user'
 
+            //setzt den Benutzernamen
             document.getElementById('profile-username').textContent = user.username;
             emailElement.textContent = user.email;
             nameElement.textContent = user.legalname;
@@ -27,82 +29,87 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    //ruft Funktion und übergibt userID -> Userprofile wird geladen und angezeigt
     loadUserProfile(userId);
 
-    const editButton = document.getElementById('edit-button');
-    const saveButton = document.getElementById('save-button');
-
+    //Wenn Edit gecklickt und man kann bearbeiten
     editButton.addEventListener('click', () => {
         toggleEdit(true);
     });
 
+    //wenn Save geklcikt dann:
     saveButton.addEventListener('click', async () => {
-        await saveUserinfo();
-        toggleEdit(false);
-        loadUserProfile(userId);
+        await saveUserinfo();       //saveUserInfo wird aufgerufen
+        toggleEdit(false);  //wechselt zurück in Anzeigemodus
+        loadUserProfile(userId);    //aktualisiert UserProfile
     });
 
+    //wenn Upload Button -> FileInput => Benutzer kanm datei auswählen
     uploadButton.addEventListener('click', () => {
         fileInput.click();
     });
 
+    //wenn datei ausgewählt wird dann 'Change' event:
     fileInput.addEventListener('change', async (event) => {
-        const file = event.target.files[0];
+        const file = event.target.files[0];             //ausgewählte Datei wird abgerufen
         if (file) {
-            const reader = new FileReader();
+            //Ein FormData Objekt wird erytellt und Datei hinzugefügt
             const formData = new FormData();
             formData.append('profilePicture', file);
 
+            //POST anfrage um Profilbild hochzuladen
             const response = await fetch(`/uploadProfilePicture?userId=${userId}`, {
                 method: 'POST',
                 body: formData
             });
 
+            //Antwort geparsed und Profilbild aktualisiert
             const data = await response.json();
             profilePicture.src = data.imageUrl;
         }
     });
+
+
     backButton.addEventListener('click', () => {
         window.location.href = `/index.html?userId=${userId}`;
     });
 
     function toggleEdit(isEditing) {
         if (isEditing) {
+            //ersetzt die 'innerHTMLÄ Elemente mit aktuellen werten
             emailElement.innerHTML = `<input id="input-email" class="input" type="email" value="${emailElement.textContent}">`;
             nameElement.innerHTML = `<input id="input-name" class="input" type="text" value="${nameElement.textContent}">`;
             phoneElement.innerHTML = `<input id="input-phone" class="input" type="tel" value="${phoneElement.textContent}">`;
-            editButton.style.display = 'none';
-            saveButton.style.display = 'inline-block';
         } else {
+            //aktualisiert Elemente mit Wert aus den Eingabefeldern
             emailElement.textContent = document.getElementById('input-email').value;
             nameElement.textContent = document.getElementById('input-name').value;
             phoneElement.textContent = document.getElementById('input-phone').value;
-            editButton.style.display = 'inline-block';
-            saveButton.style.display = 'none';
         }
     }
 
+    //sammelt aktualisierte Benutzerdaten und sendet sie zu Server um zu speichern
     async function saveUserinfo() {
+        //abruf der Aktualisierten Werte und sammelt diese
         const updatedEmail = document.getElementById('input-email').value;
         const updatedName = document.getElementById('input-name').value;
         const updatedPhone = document.getElementById('input-phone').value;
 
+        //Objekt UpdateUserInfo erstellt, welches gesammelte Infos enthaltet
         const updatedUserinfo = {
             userId,
             email: updatedEmail,
             legalname: updatedName,
             phone: updatedPhone,
-
         };
 
-        console.log('Sending updated info:', updatedUserinfo);
-
-        const response = await fetch('/updateInfo', {
+        //sendet aktualisierten Benutzerdaten an Server
+        const response = await fetch('/updateInfo', {   //Führt HTTP Anfrage an /updateInfo aus
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(updatedUserinfo)
+            body: JSON.stringify(updatedUserinfo) //wadnelt updateUserInfo ind ein JSON String um
         });
 
         if (response.ok) {
