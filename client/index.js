@@ -497,7 +497,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               messageContainer.innerHTML = '';
               //display all messages
               result.chatHistory.forEach(msg => {
-                  displayMessage(msg.text, msg.senderID === userId, msg.sender, msg.timestamp);
+                  displayMessage(msg.text, msg.senderID == userId, msg.sender, msg.timestamp);
               });
           } else {
               console.error("Error loading chat messages:", response.statusText);
