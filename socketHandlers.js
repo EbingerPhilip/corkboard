@@ -1,6 +1,8 @@
 const axios = require('axios');  // Ensure axios is required if you use it in the handlers
 
-const handleSocketConnection = (io, clients, groups) => {
+const handleSocketConnection = (io) => {
+    let clients = {};
+
     io.on('connection', (socket) => {
         socket.on('init', (userId) => {
             clients[userId] = socket;
@@ -9,35 +11,10 @@ const handleSocketConnection = (io, clients, groups) => {
             //falls es eine init message geben solln kann man das hier machen, ist jz aber auf der client seite auch auskommentiert
             // socket.emit('init', { messages: [] });
 
-            // Join user to their groups
-            for (const groupId in groups) {
-                if (groups[groupId].includes(userId)) {
-                    socket.join(`group-${groupId}`);
-                }
-            }
-
             // Füge den Socket zum Raum des Benutzers hinzu
             socket.join(userId);
 
             console.log(`User ${userId} connected`);
-        });
-
-        socket.on('group', (data) => {
-            if (typeof data === 'object' && data.groupId && data.text) {
-                if (groups[data.groupId] && groups[data.groupId].includes(socket.userId)) {
-                    console.log(`Sending group message from ${socket.userId} to group ${data.groupId}: ${data.text}`);
-                    socket.broadcast.to(`group-${data.groupId}`).emit('group', {
-                        fromUserId: socket.userId,
-                        groupId: data.groupId,
-                        text: data.text,
-                        timestamp: data.timestamp || new Date().toISOString()
-                    });
-                } else {
-                    console.log(`User ${socket.userId} is not authorized to send messages to group ${data.groupId}`);
-                }
-            } else {
-                console.warn('Received invalid data format for group event:', data);
-            }
         });
 
         socket.on('create-chat', async (data) => {
@@ -50,7 +27,7 @@ const handleSocketConnection = (io, clients, groups) => {
                         userId: data.userIdToAdd
                     });
                 } else {
-                    console.log('Empfänger ist offline, Chat wird in der DB gespeichert.');
+                    console.log('User is offline, Chat only stored in database.');
                 }
             } else {
                 console.warn('Received invalid data format for create-chat event:', data);

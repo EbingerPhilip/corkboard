@@ -11,27 +11,17 @@ const YAML = require("yamljs");
 const OpenAI = require("openai");
 const multer = require ('multer');
 const handleSocketConnection = require('./socketHandlers');
-//waren beide ausgegraut, habs mal auskommentiert falls sie doch noch benötigt werden
-// const WebSocket = require("ws");
-// const bodyParser = require('body-parser');
 
 const User = require('./models/users');
 const Chat = require('./models/chats');
 const Message = require('./models/message');
 const {cookieJwtAuth} = require("./models/cookieJwtAuth");
 
-
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-//TODO: group hier Löschen
-let clients = {};
-const groups = {
-  1: ['2', '3', '4'],
-};
-
-handleSocketConnection(io, clients, groups);
+handleSocketConnection(io);
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "client"),{ index : 'login.html' }));

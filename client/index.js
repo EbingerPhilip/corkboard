@@ -37,7 +37,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let socket;
   let targetId;
-  let isGroupChat = false;
   let username;
   let emojis = [];
   let chatId;
@@ -217,7 +216,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         chatTitle.textContent = username;
         targetId = userId;
         chatId = chatID;
-        isGroupChat = false;
         messageContainer.innerHTML = '';
         loadChatMessages(chatID);
         console.log(`Chat ID: ${chatID}`);
@@ -272,21 +270,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.log(`New chat created with user ${senderId}`);
           }
 
-          if (!isGroupChat && senderId === targetId) {
-            displayMessage(data.text, data.fromUserId === userId, senderUsername, data.timestamp);
+          if (senderId === targetId) {
+            await displayMessage(data.text, data.fromUserId === userId, senderUsername, data.timestamp);
           }
         } else {
           console.error("Kein Benutzer gefunden");
         }
       } catch (error) {
         console.error("Fehler bei der Anfrage:", error);
-      }
-    });
-
-    socket.on('group', (data) => {
-      if (isGroupChat && data.groupId === targetId) {
-        console.log('Received group message', data);
-        displayMessage(data.text, data.fromUserId === username, data.fromUserId, data.timestamp);
       }
     });
 
@@ -321,12 +312,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const messageText = input.value.trim().toLowerCase();
     if (input.value && targetId) {
       const timestamp = new Date().toISOString();
-      if (isGroupChat) {
-        sendGroupMessage(socket, targetId, input.value);
-      } else {
-        sendMessage(socket, targetId, input.value, chatId);
-        displayMessage(input.value, true, username, timestamp);
-      }
+
+      sendMessage(socket, targetId, input.value, chatId);
+      displayMessage(input.value, true, username, timestamp);
 
       if (targetId === 'chatgpt') {
         try {
@@ -370,23 +358,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       event.preventDefault();
       const chatName = event.target.textContent;
       chatTitle.textContent = chatName;
-      targetId = event.target.getAttribute('data-user-id') || event.target.getAttribute('data-group-id');
+      targetId = event.target.getAttribute('data-user-id')
       chatId = event.target.getAttribute('data-chat-id');
-      isGroupChat = event.target.hasAttribute('data-group-id');
       messageContainer.innerHTML = '';
       loadChatMessages(chatId);
       console.log(`Chat ID: ${chatId}`);
     });
   });
-
-  function sendGroupMessage(socket, groupId, message) {
-    const timestamp = new Date().toISOString();
-    socket.emit('group', {
-      groupId: groupId,
-      text: message,
-      timestamp: timestamp
-    });
-  }
 
   async function getUsernameById(userId) {
     try {
