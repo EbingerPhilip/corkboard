@@ -32,7 +32,7 @@ const handleSocketConnection = (io) => {
                         chatID: data.chatID
                     });
                     //triggers the create Chat event at the target
-                    io.to(targetSocket.id).emit('create-chat', {
+                    targetSocket.emit('create-chat', {
                         chatName: senderUsername,
                         userId: socket.userId,
                         chatID: data.chatID
