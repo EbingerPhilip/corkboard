@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             //POST anfrage um Profilbild hochzuladen
             const response = await fetch(`/uploadProfilePicture?userId=${userId}`, {
-                method: 'POST',
+                method: 'PUT',
                 body: formData
             });
 
@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         //sendet aktualisierten Benutzerdaten an Server
         const response = await fetch('/updateInfo', {   //Führt HTTP Anfrage an /updateInfo aus
-            method: 'PUT',
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
             },

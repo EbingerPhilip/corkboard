@@ -288,7 +288,7 @@ app.get('/Chat', async function (req, res) {
   }
 });
 
-app.put('/updateInfo', async function (req, res) {
+app.patch('/updateInfo', async function (req, res) {
   try {
     //Elemente werden aus Body extrahiert
     const { userId, email, legalname, phone } = req.body;
@@ -316,7 +316,7 @@ app.put('/updateInfo', async function (req, res) {
 });
 
 //'multer' middleware, ermöglicht Hochladen einer einzelnen Datei; verarbeitet dann Datei und fügt sie dem req.file Objekt hinzu
-app.post('/uploadProfilePicture', upload.single('profilePicture'), async (req, res) => {
+app.put('/uploadProfilePicture', upload.single('profilePicture'), async (req, res) => {
   const userId = req.query.userId;
   //Erstellt die URL für das hochgeladene Bild, basierend auf dem Dateinamen, der von multer generiert wurde und im req.file`-Objekt gespeichert ist.
   const imageUrl = `/uploads/${req.file.filename}`;
