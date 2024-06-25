@@ -1,0 +1,54 @@
+body {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+}
+
+.container {
+    width: 300px;
+    margin: 0 auto;
+    padding-top: 50px;
+}
+
+.field-group {
+    margin-bottom: 20px;
+}
+
+.field-group label {
+    display: block;
+    font-size: 18px;
+}
+
+.below-label {
+    margin-top: 5px;
+    font-size: 14px;
+    color: grey;
+}
+
+input[type="text"] {
+    font-size: 18px;
+    padding: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+#create-chats-button {
+    font-size: 18px;
+    padding: 15px;
+    background: #3273dc;
+}
