@@ -19,12 +19,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     let username;
     let emojis = [];
     let chatId;
+    let userId;
+    try {
+        const response = await fetch('/UserID', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
 
-    //get username from url
-    //todo: geht usernamefromcookies??
-    const params = new URLSearchParams(window.location.search);
-    const userId = params.get('userId');
-    console.log(userId);
+        if (response.ok) {
+            const data = await response.json();
+            userId = data.userID;
+            console.log('User ID:', userId);
+        } else {
+            console.error('Failed to get user ID:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Error getting userID:', error);
+    }
+
 
     if (!userId) {
         window.location.href = '/login.html';

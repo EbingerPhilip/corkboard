@@ -139,7 +139,7 @@ app.post('/newUser', async function (req, res) {
 
     const accept = req.headers.accept;
 
-    res.status(201).send('User created successfully')
+    res.status(201)
   } catch (error) {
     console.error('Error creating user:', error);
     res.status(500).send('Internal Server Error')
@@ -202,17 +202,11 @@ app.post('/addChat', async function (req, res){
 app.delete('/removeChat', async function (req, res){
   try {
     const {ChatID} = req.body;
-
-    //das ging nicht, vermutlich auch wegen cookies??? Philip weißt du da was? ~Julian
-    // if (!req.user.Chats.includes(Number(ChatID))){
-    //   return res.status(401).send('Invalid Credentials')
-    // }
-
     const chat = await Chat.getChatfromID(ChatID);
 
     await chat.deleteChat()
 
-    // Notify both users about the chat deletion
+    // send notification to both users (if they are online)
     if (clients[chat.User1]) {
       clients[chat.User1].emit('chat-deleted', { chatId: ChatID });
     }
@@ -220,8 +214,7 @@ app.delete('/removeChat', async function (req, res){
       clients[chat.User2].emit('chat-deleted', { chatId: ChatID });
     }
 
-    // res.status(201).send("Chat deleted")
-    //TODO: reicht das? sonst muss ich den chat auch mit xml schicken
+
     res.status(201)
   } catch (err){
     console.error('Error deleting Chat:', err);
@@ -248,8 +241,7 @@ app.post('/Message', async function (req, res){
     const valid = Message.saveMessage(tablename, message)
 
     if (valid){
-      //TODO: reicht auch hier nur der status code?
-      res.status(201).send("Message received")
+      res.status(201)
     } else {
       res.status(400).send('Error in Saving Message')
     }
@@ -313,8 +305,8 @@ app.patch('/updateInfo', async function (req, res) {
       //speichert Daten in DB
       await user.saveUserinfo();
 
-      //TODO und auf ein neues
-      res.status(201).send('Userinfo saved successfully');
+
+      res.status(201)
     } else {
       res.status(400).send('User not found');
     }
