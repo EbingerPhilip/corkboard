@@ -235,11 +235,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         socket.on('chat-deleted', (data) => {
-            const chatId = data.chatId;
-            if(targetId === chatId){
-                window.location.reload()
-            }else{
-                const chatElement = document.querySelector(`[data-chat-id="${chatId}"]`).parentElement;
+            if (chatId === data.chatId) {
+                window.location.reload();
+            } else {
+                const chatElement = document.querySelector(`[data-chat-id="${data.chatId}"]`).parentElement;
                 if (chatElement) {
                     chatElement.remove();
                 }
@@ -531,8 +530,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             if (response.ok) {
                 console.log("Chat successfully deleted");
-                // reload window
-                window.location.reload()
             } else {
                 console.error("Error deleting chat:", response.statusText);
             }
