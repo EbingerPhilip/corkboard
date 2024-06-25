@@ -20,6 +20,6 @@ exports.cookieJwtAuth = (req, res, next) => {
         //if the token is invalid or not here
         console.log("Cookie Problem " + err)
         res.clearCookie("token");
-        return res.status(405).json({message: 'Internal server Error'});
+        return res.status(405).json({message: 'Bad Cookies'});
     }
 };

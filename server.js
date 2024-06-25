@@ -211,8 +211,7 @@ app.delete('/removeChat', async function (req, res){
 
     await chat.deleteChat()
     // res.status(201).send("Chat deleted")
-    //TODO:
-    //reicht das? sonst muss ich den chat auch mit xml schicken
+    //TODO: reicht das? sonst muss ich den chat auch mit xml schicken
     res.status(201)
   } catch (err){
     console.error('Error deleting Chat:', err);
@@ -483,8 +482,6 @@ app.get('/api/trivia', async (req, res) => {
     res.status(500).send('Error fetching trivia');
   }
 });
-
-
 
 
 server.listen(3000, () => {
