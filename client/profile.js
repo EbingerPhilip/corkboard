@@ -75,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: formData
             });
 
+
             //Antwort geparsed und Profilbild aktualisiert
             const data = await response.json();
             profilePicture.src = data.imageUrl;

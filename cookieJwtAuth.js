@@ -13,7 +13,6 @@ exports.cookieJwtAuth = (req, res, next) => {
         const user = jwt.verify(token, process.env.SECRETE_KEY);
 
         req.user = user;
-        console.log(user)
         next();
 
     }catch (err){
