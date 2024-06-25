@@ -20,6 +20,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     let emojis = [];
     let chatId;
 
+
+
     //get username from url
     //todo: geht usernamefromcookies??
     const params = new URLSearchParams(window.location.search);

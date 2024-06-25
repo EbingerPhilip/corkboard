@@ -55,6 +55,10 @@ app.use(['/addChat', '/removeChat', '/Message','/Chat', '/ChatIDs', '/UserID'],c
 const swaggerDocument = YAML.load(path.join(__dirname, 'swagger.yaml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+app.get('/set-up', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'setup.html'));
+});
+
 app.post('/User', async function (req, res) {
   try {
     const { username, password } = req.body;
@@ -139,7 +143,7 @@ app.post('/newUser', async function (req, res) {
 
     const accept = req.headers.accept;
 
-    res.status(201).send('User created successfully')
+    res.status(201).json({user})
   } catch (error) {
     console.error('Error creating user:', error);
     res.status(500).send('Internal Server Error')
@@ -496,4 +500,5 @@ app.get('/api/trivia', async (req, res) => {
 
 server.listen(3000, () => {
   console.log("Server running at http://localhost:3000/");
+  console.log("Set-up running at: http://localhost:3000/set-up")
 });
