@@ -305,7 +305,7 @@ app.patch('/updateInfo', async function (req, res) {
       //speichert Daten in DB
       await user.saveUserinfo();
 
-      res.status(201)
+      res.status(201).send("blablabla");
     } else {
       res.status(400).send('User not found');
     }
