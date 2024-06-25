@@ -90,6 +90,7 @@ document.getElementById('create-chats-button').addEventListener('click', functio
 })
 
 
+
 function createNewChat(User2) {
     fetch('/addChat',{
         method: 'POST',
