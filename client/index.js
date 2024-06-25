@@ -20,6 +20,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     let emojis = [];
     let chatId;
     let userId;
+
+    //get userid from the server (cookies)
     try {
         const response = await fetch('/UserID', {
             method: 'GET',
@@ -129,6 +131,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     scrollToBottom();
 
 
+    //load all chats
     async function getChatDetails(userId) {
         try {
             const response = await fetch(`/ChatIDs?userId=${userId}`, {
@@ -224,6 +227,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         });
 
+        //receive create chat event
         socket.on('create-chat', async (data) => {
             try {
                 //get username
@@ -248,9 +252,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         });
 
+        // receive chat deleted event
         socket.on('chat-deleted', (data) => {
+            //if user is in chat ->reload the page
             if (chatId === data.chatId) {
                 window.location.reload();
+            //else->delete chat from chatlist
             } else {
                 const chatElement = document.querySelector(`[data-chat-id="${data.chatId}"]`).parentElement;
                 if (chatElement) {
@@ -398,9 +405,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 console.log(`Chat ID: ${chatID}`);
             });
 
+            //create delete Button
             const deleteButton = document.createElement("button");
             deleteButton.textContent = "X";
             deleteButton.className = "delete-button";
+            //call delete Chat method when clicking
             deleteButton.onclick = async function() {
                 await deleteChat(chatID);
             };
@@ -536,6 +545,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     async function deleteChat(chatID) {
         try {
+            //send request to delete the chat from the database
             const response = await fetch('/removeChat', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
