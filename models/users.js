@@ -71,7 +71,6 @@ class User {
     static async findByUserID(userID) {
         let sql = `SELECT * FROM users WHERE id = '${userID}'`;
         const [users, _] = await db.execute(sql);
-        console.log(sql)
         if (users.length === 0) {
             console.log("not fund")
             return null;
@@ -139,24 +138,18 @@ class User {
 
         sql = `UPDATE users SET Chats = '${JSON.stringify(chatsArray)}' WHERE id = ${UserID}`;
         await db.execute(sql);
-        console.log(this.findByUsername(UserID));
     }
-
 
     static async getChatIDS(userID) {
         let sql = `SELECT Chats FROM users WHERE id = '${userID}'`;
         const [users, _] = await db.execute(sql);
-        console.log(sql);
         if (users.length === 0) {
             console.log("not found");
             return null;
         }
         const userData = users[0];
-        console.log("UserData " + JSON.stringify(userData)); // Debugging
         return userData.Chats;
     }
-
-
 
 }
 

@@ -49,7 +49,7 @@ function loginRequest(event){
                 }
 
 
-                window.location.href = `/index.html?userId=${data.user.id}`;
+                window.location.href = `/index.html`;
                 console.log(data.user)
             } else {
                 throw new Error('Invalid response data');
