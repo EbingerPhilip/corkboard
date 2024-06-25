@@ -290,6 +290,7 @@ app.get('/Chat', async function (req, res) {
   }
 });
 
+
 app.patch('/updateInfo', async function (req, res) {
   try {
     //Elemente werden aus Body extrahiert
