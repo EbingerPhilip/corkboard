@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let username;
     let emojis = [];
     let chatId;
-    let userId;
+    //let userId;
 
     //get userid from the server (cookies)
     try {
