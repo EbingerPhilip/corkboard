@@ -104,8 +104,6 @@ app.get('/findUser', async function (req, res){
   // const {userId} = req.body;
   // const user = await User.findByUserID(userId);
 
-  console.log("User: " + JSON.stringify(user));
-
   if (!user) {
     res.status(400).send("no user found")
   }else{
@@ -163,7 +161,6 @@ app.post('/addChat', async function (req, res){
 
     const chat = new Chat(User1, User2);
     const chatID = await chat.saveChat();
-    console.log(chatID);
 
     //update token
     const tokenChats = req.user.Chats
@@ -428,7 +425,6 @@ app.get('/ChatIDs', async (req, res) => {
 
   try {
     const chats = await User.getChatIDS(userId);
-    console.log('User chats:', chats); // Debugging
 
     if (!chats) {
       return res.status(404).send('User not found or no chats available');
@@ -439,7 +435,6 @@ app.get('/ChatIDs', async (req, res) => {
 
     for (const chatId of chatIDs) {
       const userIds = await Chat.getUserIdsByChatId(chatId);
-      console.log(`User IDs for chat ${chatId}:`, userIds); // Debugging
 
       if (!userIds) continue;
 
