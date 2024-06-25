@@ -302,6 +302,7 @@ app.patch('/updateInfo', async function (req, res) {
       user.legalname = legalname;
       user.phone = phone;
 
+
       //speichert Daten in DB
       await user.saveUserinfo();
 
