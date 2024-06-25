@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const backButton = document.getElementById('back-button');
     const editButton = document.getElementById('edit-button');
     const saveButton = document.getElementById('save-button');
+    const triviaButton = document.getElementById('trivia-button');
+    const triviaElement = document.getElementById('profile-trivia');
     
     //läd Userprofile für angegebene userID
     async function loadUserProfile(userId) {
@@ -31,6 +33,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //ruft Funktion und übergibt userID -> Userprofile wird geladen und angezeigt
     loadUserProfile(userId);
+
+    triviaButton.addEventListener('click', async () => {
+        try {
+            const response = await fetch('/api/trivia');
+            const data = await response.json();
+            triviaElement.textContent = data[0].question + ' - ' + data[0].answer;
+        } catch (error) {
+            console.error('Error fetching trivia:', error);
+        }
+    });
 
     //Wenn Edit gecklickt und man kann bearbeiten
     editButton.addEventListener('click', () => {

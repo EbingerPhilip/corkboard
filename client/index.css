@@ -101,14 +101,13 @@ body {
     background-color: #00c4a7;
     border-color: #00c4a7;
 }
-#emoji-button {
-    background-color: #ffdd57;
-    border-color: #ffdd57;
-    color: #fff;
+#addUserButton {
+    background-color: #00d1b2;
+    border-color: #00d1b2;
 }
-#emoji-button:hover {
-    background-color: #ffcc00;
-    border-color: #ffcc00;
+#addUserButton:hover {
+    background-color: #00c4a7;
+    border-color: #00c4a7;
 }
 
 /* Responsive Design */

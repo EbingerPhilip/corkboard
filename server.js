@@ -472,6 +472,18 @@ app.get('/ChatIDs', async (req, res) => {
   }
 });
 
+app.get('/api/trivia', async (req, res) => {
+  try {
+    const response = await axios.get(`https://api.api-ninjas.com/v1/trivia?category=general`, {
+      headers: { 'X-Api-Key': process.env.API_TRIVIA_KEY }
+    });
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error('Error fetching trivia:', error);
+    res.status(500).send('Error fetching trivia');
+  }
+});
+
 
 
 
