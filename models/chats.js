@@ -39,17 +39,17 @@ class Chat {
 
         return this.id;
     }
-
     static async createMessageTable(tableName) {
         if (!tableName) {
             throw new Error('Table name cannot be empty');
         }
 
         const createTableSQL = `
-        CREATE TABLE ${tableName} (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            Data JSON NOT NULL
-        )`;
+      CREATE TABLE ${tableName} (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        Data JSON NOT NULL
+      )
+    `;
         try {
             await db.execute(createTableSQL);
             console.log(`Table '${tableName}' created successfully`);
@@ -57,6 +57,7 @@ class Chat {
             console.error(`Error creating table '${tableName}':`, error);
         }
     }
+
 
     static async getChatfromID(chatID){
         let sql = `SELECT * FROM chats WHERE id = '${chatID}'`;
@@ -96,28 +97,6 @@ class Chat {
            return false
        }
     }
-
-/*    static async getMessages(TableName){
-        try {
-            let sql = `SELECT * FROM ${TableName}`
-            const [chatString, _] = await db.execute(sql);
-            const chat = [];
-            if (chatString.length > 0) {
-                for (let i = 0; i < chatString.length; i++){
-                    const row = chatString[i]
-                    const message = row.Data;
-
-                    chat.push(JSON.parse(message))
-                }
-                return chat
-            }else{
-                return null
-            }
-
-        }catch (err){
-            console.log(err.message)
-        }
-    }*/
 
     static async getMessages(tableName) {
         try {
@@ -162,24 +141,6 @@ class Chat {
         return result.length > 0 ? result[0] : null;
     }
 
-    static async createMessageTable(tableName) {
-        if (!tableName) {
-            throw new Error('Table name cannot be empty');
-        }
-
-        const createTableSQL = `
-      CREATE TABLE ${tableName} (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        Data JSON NOT NULL
-      )
-    `;
-        try {
-            await db.execute(createTableSQL);
-            console.log(`Table '${tableName}' created successfully`);
-        } catch (error) {
-            console.error(`Error creating table '${tableName}':`, error);
-        }
-    }
 
     static async getUserIdsByChatId(chatId) {
         let sql = `SELECT user1, user2 FROM chats WHERE id = '${chatId}'`;

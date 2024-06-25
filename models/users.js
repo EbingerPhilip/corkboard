@@ -12,19 +12,6 @@ class User {
         this.profilePicture = profilePicture;
     }
 
-
-    getUsername() {
-        return this.username
-    }
-
-    getChats() {
-        return this.Chats
-    }
-
-    getid() {
-        return this.id;
-    }
-
     async saveUser() {
         console.log(this.username)
 
@@ -41,15 +28,6 @@ class User {
         )`;
         const [newUser, _] = await db.execute(sql);
         this.id = newUser.insertId;
-    }
-
-    checkpassword(login) {
-        if (login === this.password) {
-            return true
-        } else {
-            console.log("bad Passoword")
-            return false
-        }
     }
 
 
@@ -109,27 +87,6 @@ class User {
         return user
     }
 
-
-
-    //musste was ändern damit es geht, wollte die funktion aber noch ned löschen :D ~Julian
-    /*static async addNewChat(chatID, UserID) {
-        if (!Number.isInteger(chatID)) {
-            console.log("Chat: " + chatID + " has not been initalized correctly")
-        }
-
-        let sql = `SELECT * FROM users WHERE id = '${UserID}'`;
-        const [user, _] = await db.execute(sql);
-        if (user.length === 0) {
-            console.log("Chat: " + chatID + " has not been initalized correctly")
-        }
-
-        const userData = user[0];
-        let chatsArray = JSON.parse(userData.Chats);
-        chatsArray.push(chatID);
-
-        sql = `UPDATE users SET Chats = '${JSON.stringify(chatsArray)}' WHERE id = ${UserID}`;
-        await db.execute(sql);
-    }*/
 
     static async addNewChat(chatID, UserID) {
         if (!Number.isInteger(chatID)) {

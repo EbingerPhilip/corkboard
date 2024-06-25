@@ -120,9 +120,6 @@ app.get('/findUser', async function (req, res){
     } else {
       res.status(200).json(user)
     }
-
-
-    // res.status(200).json(user)
   }
 })
 
@@ -268,7 +265,6 @@ app.get('/Chat', async function (req, res) {
       return res.status(401).send('Unauthorized');
     }
     const tableName = `Chat${ChatID}`;
-    console.log("tablename: " + tableName);
 
     const chatHistory = await Chat.getMessages(tableName);
 
@@ -305,11 +301,9 @@ app.patch('/updateInfo', async function (req, res) {
       user.email = email;
       user.legalname = legalname;
       user.phone = phone;
-      console.log('Updated details:', { email: user.email, legalname: user.legalname, phone: user.phone });
 
       //speichert Daten in DB
       await user.saveUserinfo();
-
 
       res.status(201)
     } else {
