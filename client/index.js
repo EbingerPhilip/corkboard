@@ -233,6 +233,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                 console.error("Fehler bei der Anfrage:", error);
             }
         });
+
+        socket.on('chat-deleted', (data) => {
+            const chatId = data.chatId;
+            if(targetId === chatId){
+                window.location.reload()
+            }else{
+                const chatElement = document.querySelector(`[data-chat-id="${chatId}"]`).parentElement;
+                if (chatElement) {
+                    chatElement.remove();
+                }
+            }
+        });
     }
 
     function initSocket() {
@@ -377,7 +389,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             deleteButton.textContent = "X";
             deleteButton.className = "delete-button";
             deleteButton.onclick = async function() {
-                await deleteChat(chatId, li);
+                await deleteChat(chatID);
             };
             li.appendChild(deleteButton);
 
@@ -509,20 +521,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
   }
 
-    async function deleteChat(chatID, chatElement) {
+    async function deleteChat(chatID) {
         try {
-            //send request to the server to delete Chat
             const response = await fetch('/removeChat', {
                 method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ChatID: chatID})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ChatID: chatID })
             });
 
             if (response.ok) {
                 console.log("Chat successfully deleted");
-                chatElement.remove();
+                // reload window
+                window.location.reload()
             } else {
                 console.error("Error deleting chat:", response.statusText);
             }

@@ -10,7 +10,8 @@ const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
 const OpenAI = require("openai");
 const multer = require ('multer');
-const handleSocketConnection = require('./socketHandlers');
+// const handleSocketConnection = require('./socketHandlers');
+const { handleSocketConnection, clients } = require('./socketHandlers');
 const { Builder } = require('xml2js');
 
 const User = require('./models/users');
@@ -210,6 +211,15 @@ app.delete('/removeChat', async function (req, res){
     const chat = await Chat.getChatfromID(ChatID);
 
     await chat.deleteChat()
+
+    // Notify both users about the chat deletion
+    if (clients[chat.User1]) {
+      clients[chat.User1].emit('chat-deleted', { chatId: ChatID });
+    }
+    if (clients[chat.User2]) {
+      clients[chat.User2].emit('chat-deleted', { chatId: ChatID });
+    }
+
     // res.status(201).send("Chat deleted")
     //TODO: reicht das? sonst muss ich den chat auch mit xml schicken
     res.status(201)

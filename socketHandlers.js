@@ -1,7 +1,9 @@
 const axios = require('axios');  // Ensure axios is required if you use it in the handlers
 
+let clients = {};
+
 const handleSocketConnection = (io) => {
-    let clients = {};
+
 
     io.on('connection', (socket) => {
         socket.on('init', (userId) => {
@@ -73,4 +75,4 @@ const handleSocketConnection = (io) => {
     });
 };
 
-module.exports = handleSocketConnection;
+module.exports = { handleSocketConnection, clients };
