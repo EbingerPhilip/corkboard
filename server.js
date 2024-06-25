@@ -161,7 +161,7 @@ app.post('/addChat', async function (req, res){
 
     const chat = new Chat(User1, User2);
     const chatID = await chat.saveChat();
-
+    console.log(chatID);
     //update token
     const tokenChats = req.user.Chats
     tokenChats.push(chatID)
