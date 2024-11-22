@@ -26,7 +26,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     //todo: geht usernamefromcookies??
     const params = new URLSearchParams(window.location.search);
     const userId = params.get('userId');
-    console.log(userId);
 
     if (!userId) {
         window.location.href = '/login.html';

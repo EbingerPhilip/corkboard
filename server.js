@@ -104,7 +104,6 @@ app.get('/findUser', async function (req, res){
   // const {userId} = req.body;
   // const user = await User.findByUserID(userId);
 
-  console.log("User: " + JSON.stringify(user));
 
   if (!user) {
     res.status(400).send("no user found")
@@ -158,7 +157,6 @@ app.post('/addChat', async function (req, res){
     const { User2 } = req.body;
     const User1 = req.user.id.valueOf();
 
-    console.log(`Creating chat between User1: ${User1} and User2: ${User2}`);
 
     if (!User2) {
       return res.status(400).send('missing User');
@@ -166,7 +164,6 @@ app.post('/addChat', async function (req, res){
 
     const chat = new Chat(User1, User2);
     const chatID = await chat.saveChat();
-    console.log(chatID);
     //update token
     const tokenChats = req.user.Chats
     tokenChats.push(chatID)
@@ -275,7 +272,6 @@ app.get('/Chat', async function (req, res) {
       return res.status(401).send('Unauthorized');
     }
     const tableName = `Chat${ChatID}`;
-    console.log("tablename: " + tableName);
 
     const chatHistory = await Chat.getMessages(tableName);
 
@@ -312,7 +308,6 @@ app.patch('/updateInfo', async function (req, res) {
       user.email = email;
       user.legalname = legalname;
       user.phone = phone;
-      console.log('Updated details:', { email: user.email, legalname: user.legalname, phone: user.phone });
 
       //speichert Daten in DB
       await user.saveUserinfo();
@@ -372,7 +367,6 @@ app.post('/api/chat', async (req, res) => {
       temperature: 1,
     });
 
-    console.log('OpenAI response:', response);
 
     if (response && response.choices && response.choices.length > 0) {
 
@@ -441,7 +435,6 @@ app.get('/ChatIDs', async (req, res) => {
 
   try {
     const chats = await User.getChatIDS(userId);
-    console.log('User chats:', chats); // Debugging
 
     if (!chats) {
       return res.status(404).send('User not found or no chats available');
@@ -452,7 +445,6 @@ app.get('/ChatIDs', async (req, res) => {
 
     for (const chatId of chatIDs) {
       const userIds = await Chat.getUserIdsByChatId(chatId);
-      console.log(`User IDs for chat ${chatId}:`, userIds); // Debugging
 
       if (!userIds) continue;
 

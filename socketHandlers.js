@@ -13,7 +13,6 @@ const handleSocketConnection = (io) => {
             socket.userId = userId;
             // socket.join(userId);
 
-            console.log(`User ${userId} connected`);
         });
 
         socket.on('direct', async (data) => {
@@ -51,7 +50,6 @@ const handleSocketConnection = (io) => {
             if (typeof data === 'object' && data.userIdToAdd && data.chatUsername) {
                 const targetSocket = clients[data.userIdToAdd];
                 if (targetSocket) {
-                    console.log(`Erstelle Chat für User ${data.userIdToAdd} mit Chatname ${data.chatUsername}`);
                     targetSocket.emit('create-chat', {
                         chatName: data.chatUsername,
                         userId: data.userIdToAdd
@@ -68,7 +66,6 @@ const handleSocketConnection = (io) => {
 
         socket.on('disconnect', () => {
             if (socket.userId) {
-                console.log(`User ${socket.userId} disconnected`);
                 delete clients[socket.userId];
             }
         });

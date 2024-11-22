@@ -13,11 +13,11 @@ const pool = mysql.createPool({
 
 
 //server connection 
-console.log(process.env.DBuser + " : " + process.env.DBpassword);
+
 
 
 const pool = mysql.createPool({
-    host: '172.205.225.192' ,
+    host: 'localhost' ,
     user: process.env.DBuser,
     password:process.env.DBpassword,
     database:'users_cb',  

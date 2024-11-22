@@ -82,8 +82,7 @@ document.getElementById('create-chats-button').addEventListener('click', functio
             createChatsLabel.style.color = 'red';
             console.error('Error:', error);
         });
-    console.log(UserNR2)
-    console.log(UserNR2.id)
+
 
     createNewChat(UserNR2.id)
     createNewChat(User3.id)

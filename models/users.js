@@ -13,7 +13,6 @@ class User {
     }
 
     async saveUser() {
-        console.log(this.username)
 
         let sql = `
         INSERT INTO users (
@@ -63,7 +62,7 @@ class User {
 
             return user
         } else {
-            console.log("not fund")
+            console.log("User not found")
             return null; // User not found
         }
     }
@@ -72,11 +71,10 @@ class User {
         let sql = `SELECT * FROM users WHERE id = '${userID}'`;
         const [users, _] = await db.execute(sql);
         if (users.length === 0) {
-            console.log("not fund")
+            console.log("User not found")
             return null;
         }
         const userData = users[0];
-        // console.log("UserData " + JSON.stringify(userData));
 
         const user = new User(userData.username, userData.password, userData.email, userData.phone, userData.legalname, userData.profilePicture);
         user.id = userData.id;

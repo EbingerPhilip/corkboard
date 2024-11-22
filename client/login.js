@@ -38,9 +38,7 @@ function loginRequest(event){
                 if (data.user.Chats) {
                     try {
                         const chatsArray = JSON.parse(data.user.Chats); // String in Array umwandeln
-                        console.log('Chats list:', chatsArray); // Debugging
                         sessionStorage.setItem('userChats', JSON.stringify(chatsArray));
-                        console.log('userChats successfully stored in sessionStorage'); // Debugging
                     } catch (e) {
                         console.error('Failed to parse Chats list:', e); // Debugging
                     }

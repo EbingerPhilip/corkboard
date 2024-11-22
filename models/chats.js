@@ -52,7 +52,6 @@ class Chat {
     `;
         try {
             await db.execute(createTableSQL);
-            console.log(`Table '${tableName}' created successfully`);
         } catch (error) {
             console.error(`Error creating table '${tableName}':`, error);
         }
@@ -68,7 +67,6 @@ class Chat {
             const chat = new Chat(chatData.User1, chatData.User2);
             chat.id = chatData.id;
             chat.Messages = chatData.Messages;
-            console.log(chat)
 
             return chat
         } else {
@@ -90,7 +88,6 @@ class Chat {
            await connection.execute(sql);
            connection.release();
 
-          console.log(`Table ${this.Messages} deleted successfully`)
            return true
        }catch (err){
            console.log(`Error deleting table '${this.Messages}':`, error)
